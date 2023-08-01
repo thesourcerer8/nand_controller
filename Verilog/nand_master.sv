@@ -139,36 +139,6 @@ module nand_master(clk,enable,nand_cle,nand_ale,nand_nwe,nand_nwp,nand_nce,nand_
 	reg [31:0] oob_bytes_per_page;
 	reg [10:0] addr_cycles;
 
-	typedef enum {
-	M_RESET=0,
-	M_NAND_RESET=1,
-	M_NAND_READ_PARAM_PAGE=2,
-	M_NAND_READ_ID=3,
-	M_NAND_BLOCK_ERASE=4,
-	M_NAND_READ_STATUS=5,
-	M_NAND_READ=6,
-	M_NAND_PAGE_PROGRAM=7,
-	MI_GET_STATUS=8,
-	MI_CHIP_ENABLE=9,
-	MI_CHIP_DISABLE=10,
-	MI_WRITE_PROTECT=11,
-	MI_WRITE_ENABLE=12,
-	MI_RESET_INDEX=13,
-	MI_GET_ID_BYTE=14,
-	MI_GET_PARAM_PAGE_BYTE=15,
-	MI_GET_DATA_PAGE_BYTE=16,
-	MI_SET_DATA_PAGE_BYTE=16,
-	MI_GET_CURRENT_ADDRESS_BYTE=18,
-	MI_SET_CURRENT_ADDRESS_BYTE=19,
-	MI_BYPASS_ADDRESS=20,
-	MI_BYPASS_COMMAND=21,
-	MI_BYPASS_DATA_WR=22,
-	MI_BYPASS_DATA_RD=23,
-	M_IDLE=24
-	} states_t;
-
-	states_t state_switch;
-
 	
 //	The following is a sort of a status register. Bit set to 1 means TRUE, bit set to 0 means FALSE:
 //	0 - is ONFI compliant
@@ -302,7 +272,7 @@ always @(posedge clk) begin
 				// This is in fact a command interpreter
 				M_IDLE: begin
 					if(activate == 1'b1) begin
-						state= state_switch[cmd_in];
+						state= cmd_in;
 					end
 				end	
 				// Reset the NAND chip
