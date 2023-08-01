@@ -22,9 +22,14 @@ module latch_unit (clk,activate,data_in,latch_ctrl,write_enable,busy,data_out);
 	output busy; // :=0;
 	output [15:0] data_out;
 
-	typedef enum {LATCH_IDLE, LATCH_HOLD, LATCH_WAIT, LATCH_DELAY} latch_state_t;
-	latch_state_t state; //:= LATCH_IDLE;
-	latch_state_t n_state; // := LATCH_IDLE;
+//	typedef enum {LATCH_IDLE, LATCH_HOLD, LATCH_WAIT, LATCH_DELAY} latch_state_t;
+`define LATCH_IDLE  2'b00
+`define LATCH_HOLD  2'b01
+`define LATCH_WAIT  2'b10
+`define LATCH_DELAY 2'b11
+
+	reg [3:0] state; // = LATCH_IDLE;
+	reg [3:0] n_state; // = LATCH_IDLE;
 	reg delay = 0;
 
 always @(posedge clk) begin

@@ -23,7 +23,11 @@ module io_unit(clk,activate,data_in,io_ctrl,data_out,busy);
 
         assign io_ctrl = 1'b1; // We want it initialized but overwritten on demand
 	
-	typedef enum {IO_IDLE, IO_HOLD, IO_DELAY} io_state_t; 
+//	typedef enum {IO_IDLE, IO_HOLD, IO_DELAY} io_state_t; 
+`define IO_IDLE 0
+`define IO_HOLD 1
+`define IO_DELAY 2
+
 	
 	reg [2:0] state; // = (io_state_t == IO_IDLE);
 	reg [2:0] n_state; //= (io_state_t == IO_IDLE);
