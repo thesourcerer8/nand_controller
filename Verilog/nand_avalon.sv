@@ -34,7 +34,7 @@ module nand_avalon (clk,resetn,readdata,writedata,pread,pwrite,address,nand_cle,
 		.data_in (n_data_in),
 		.busy (n_busy),
 		.activate (n_activate),
-		.cmd_in (n_cmd_in), 
+		.cmd_in (n_cmd_in)
 	);
 
 	reg nreset;
