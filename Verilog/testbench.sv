@@ -12,7 +12,7 @@
 //
 
 
-`timescale 1.25 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
+`timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
 `include "nand_master.sv"
 
 module tb ();
@@ -134,7 +134,7 @@ begin
 	activate = 1'b0;
 	
 		
-	wait;
+	//wait;
 end
 
 endmodule
