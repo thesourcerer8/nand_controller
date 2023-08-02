@@ -16,24 +16,7 @@
 `include "nand_master.sv"
 
 module tb ();
-
-	nand_master NM (
-		.clk      (clk),
-		.nand_cle (nand_cle),
-		.nand_ale (nand_ale),
-		.nand_nwe (nand_nwe),
-		.nand_nwp (nand_nwp),
-		.nand_nce (nand_nce),
-		.nand_nre (nand_nre),
-		.nand_rnb (nand_rnb),
-		.nand_data(nand_data),
-		.nreset   (nreset),
-		.data_out (data_out),
-		.data_in  (data_in),
-		.busy     (busy),
-		.activate (activate),
-		.cmd_in   (cmd_in)
-	);
+	reg clk =1'b1;
 
 	// Internal interface
 	wire nand_cle;
@@ -57,7 +40,25 @@ module tb ();
 	wire busy;
 	reg activate;
 	reg [7:0]cmd_in;
-	reg clk =1'b1;
+
+	nand_master NM (
+		.clk      (clk),
+		.nand_cle (nand_cle),
+		.nand_ale (nand_ale),
+		.nand_nwe (nand_nwe),
+		.nand_nwp (nand_nwp),
+		.nand_nce (nand_nce),
+		.nand_nre (nand_nre),
+		.nand_rnb (nand_rnb),
+		.nand_data(nand_data),
+		.nreset   (nreset),
+		.data_out (data_out),
+		.data_in  (data_in),
+		.busy     (busy),
+		.activate (activate),
+		.cmd_in   (cmd_in)
+	);
+
 
 
 always
