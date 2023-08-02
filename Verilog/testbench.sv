@@ -42,15 +42,22 @@ module tb ();
 	wire nand_nwp;
 	wire nand_nce;
 	wire nand_nre;
-	wire nand_rnb; // := '1';
+	reg nand_rnb = 1'b1;
+
 	wire [15:0]nand_data;
-	wire nreset; // :='1';
+	reg [15:0]nand_data_drive;
+	wire [15:0]nand_data_recv;
+
+	assign nand_data= nand_data_drive;
+	assign nand_data_recv=nand_data;
+
+	reg nreset = 1'b1;
 	wire [7:0]data_out;
-	wire [7:0]data_in;
+	reg [7:0]data_in;
 	wire busy;
-	wire activate;
-	wire [7:0]cmd_in;
-	wire clk; //1	: std_logic := '1';
+	reg activate;
+	reg [7:0]cmd_in;
+	reg clk =1'b1;
 
 
 always
@@ -62,12 +69,12 @@ begin
 end
 
 
-always @(posedge clk)
+initial
 begin
 
 	activate = 1'b0;
 	nreset = 1'b1;
-	nand_data = "ZZZZZZZZZZZZZZZZ";
+	nand_data_drive = "ZZZZZZZZZZZZZZZZ";
 	
 	// Enable the chip
 	#5;
@@ -87,17 +94,17 @@ begin
 	
 	// Provide ID
 	#155;
-	nand_data = 16'h002c;
+	nand_data_drive = 16'h002c;
 	#32;
-	nand_data = 16'h00e5;
+	nand_data_drive = 16'h00e5;
 	#32;
-	nand_data = 16'h00ff;
+	nand_data_drive = 16'h00ff;
 	#32;
-	nand_data = 16'h0003;
+	nand_data_drive = 16'h0003;
 	#32;
-	nand_data = 16'h0086;
+	nand_data_drive = 16'h0086;
 	#32;
-	nand_data = "ZZZZZZZZZZZZZZZZ";
+	nand_data_drive = "ZZZZZZZZZZZZZZZZ";
 	#5;
 	
 	// Read the bytes of the ID
@@ -132,9 +139,8 @@ begin
 	activate = 1'b1;
 	#2;
 	activate = 1'b0;
-	
-		
-	//wait;
+	#2;	
+	//$stop;
 end
 
 endmodule

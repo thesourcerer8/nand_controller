@@ -15,29 +15,29 @@
 //package global;
 	// Clock cycle length in ns
 	// IMPORTANT!!! The 'clock_cycle' is configured for 400MHz, change it appropriately!
-`define clock_cycl 2
+`define clock_cycle 2
 
 	// NAND interface delays.
 	// Delays of 7.5ns may need to be fixed to 7.0.
-`define	t_cls	(10.0	/ clock_cycle);
-`define	t_clh	(5.0 	/ clock_cycle);
-`define	t_wp	(10.0 	/ clock_cycle);
-`define	t_wh	(7.5	/ clock_cycle);
-`define	t_wc	(20.0	/ clock_cycle);
-`define	t_ds	(7.5	/ clock_cycle);
-`define	t_dh	(5.0	/ clock_cycle);
-`define	t_als	(10.0	/ clock_cycle);
-`define	t_alh	(5.0	/ clock_cycle);
-`define	t_rr	(20.0	/ clock_cycle);
-`define	t_rea	(16.0	/ clock_cycle);
-`define	t_rp	(10.0	/ clock_cycle);
-`define	t_reh	(7.5	/ clock_cycle);
-`define	t_wb	(100.0	/ clock_cycle);
-`define	t_rst	(5000.0	/ clock_cycle);
-`define	t_bers	(700000.0 / clock_cycle);
-`define	t_whr	(80.0	/ clock_cycle);
-`define	t_prog	(600000.0 / clock_cycle);
-`define	t_adl	(70.0	/ clock_cycle);
+`define	t_cls	(10.0	/ `clock_cycle)
+`define	t_clh	(5.0 	/ `clock_cycle)
+`define	t_wp	(10.0 	/ `clock_cycle)
+`define	t_wh	(7.5	/ `clock_cycle)
+`define	t_wc	(20.0	/ `clock_cycle)
+`define	t_ds	(7.5	/ `clock_cycle)
+`define	t_dh	(5.0	/ `clock_cycle)
+`define	t_als	(10.0	/ `clock_cycle)
+`define	t_alh	(5.0	/ `clock_cycle)
+`define	t_rr	(20.0	/ `clock_cycle)
+`define	t_rea	(16.0	/ `clock_cycle)
+`define	t_rp	(10.0	/ `clock_cycle)
+`define	t_reh	(7.5	/ `clock_cycle)
+`define	t_wb	(100.0	/ `clock_cycle)
+`define	t_rst	(5000.0	/ `clock_cycle)
+`define	t_bers	(700000.0 / `clock_cycle)
+`define	t_whr	(80.0	/ `clock_cycle)
+`define	t_prog	(600000.0 / `clock_cycle)
+`define	t_adl	(70.0	/ `clock_cycle)
 
 //typedef enum {LATCH_CMD, LATCH_ADDR} latch_t;
 `define LATCH_CMD 0
@@ -102,6 +102,7 @@
 `define MS_END 13
 //	} master_substate_t;
 
+`define max_page_idx 10000
 	//typedef logic [7:0] page_t [max_page_idx];
 	//typedef logic [7:0] param_page_t [256];
 	//typedef logic [7:0] nand_id_t [5];

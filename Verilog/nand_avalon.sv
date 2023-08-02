@@ -17,6 +17,13 @@ module nand_avalon (clk,resetn,readdata,writedata,pread,pwrite,address,nand_cle,
 	input nand_rnb;
 	// NAND chip data hardware interface. These signals should be boiund to physical pins.
 	inout [15:0] nand_data;
+
+	reg nand_cle=0;
+	reg nand_ale=0;
+	reg nand_nwe=1;
+	reg nand_nwp=0;
+	reg nand_nce=1;
+	reg nand_nre=1;
 	
 	nand_master NANDA (
 		.clk (clk),
