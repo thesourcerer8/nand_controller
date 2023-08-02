@@ -49,7 +49,7 @@ module nand_master(clk,enable,nand_cle,nand_ale,nand_nwe,nand_nwp,nand_nce,nand_
 	// Asynchronous command latch interface.
 	latch_unit ACL 
 	(
-		//generic map (latch_type => LATCH_CMD)
+		.latch_type (`LATCH_CMD),
 		.activate (cle_activate),
 		.latch_ctrl (cle_latch_ctrl),
 		.write_enable (cle_write_enable),
@@ -61,7 +61,7 @@ module nand_master(clk,enable,nand_cle,nand_ale,nand_nwe,nand_nwp,nand_nce,nand_
 
 	// Asynchronous address latch interface.
 	latch_unit AAL (
-	//generic map (latch_type => LATCH_ADDR)
+		.latch_type (`LATCH_ADDR),
 		.activate (ale_activate),
 		.latch_ctrl (ale_latch_ctrl),
 		.write_enable (ale_write_enable),
@@ -73,7 +73,7 @@ module nand_master(clk,enable,nand_cle,nand_ale,nand_nwe,nand_nwp,nand_nce,nand_
 	
 	// Output to NAND
 	io_unit IO_WR (
-	//generic map (io_type => IO_WRITE)
+		.io_type (`IO_WRITE),
 		.clk (clk),
 		.activate (io_wr_activate),
 		.data_in (io_wr_data_in),
@@ -84,7 +84,7 @@ module nand_master(clk,enable,nand_cle,nand_ale,nand_nwe,nand_nwp,nand_nce,nand_
 	
 	// Input from NAND
 	io_unit IO_RD (
-	//generic map (io_type => IO_READ)
+		.io_type (`IO_READ),
 		.clk (clk),
 		.activate (io_rd_activate),
 		.data_in (io_rd_data_in),

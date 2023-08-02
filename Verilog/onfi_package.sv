@@ -40,13 +40,13 @@
 `define	t_adl	(70.0	/ `clock_cycle)
 
 //typedef enum {LATCH_CMD, LATCH_ADDR} latch_t;
-`define LATCH_CMD 0
-`define LATCH_ADDR 1
+`define LATCH_CMD 1'b0
+`define LATCH_ADDR 1'b1
 
 
 //typedef enum {IO_READ, IO_WRITE} io_t;
-`define IO_READ 0
-`define IO_WRITE 1
+`define IO_READ 1'b0
+`define IO_WRITE 1'b1
 	
 //typedef enum {
 `define	M_IDLE 6'd0 					// NAND Master is in idle state - awaits commands.
