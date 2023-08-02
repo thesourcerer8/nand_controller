@@ -71,7 +71,9 @@ end
 
 initial
 begin
-
+	$dumpfile("testbench.vcd");
+	$dumpvars(0,tb);
+        #1 $display ("T=%0t Start of simulation", $realtime);
 	activate = 1'b0;
 	nreset = 1'b1;
 	nand_data_drive = "ZZZZZZZZZZZZZZZZ";
@@ -140,7 +142,8 @@ begin
 	#2;
 	activate = 1'b0;
 	#2;	
-	//$stop;
+	$display ("T=%0t End of simulation", $realtime);
+	$finish;
 end
 
 endmodule
