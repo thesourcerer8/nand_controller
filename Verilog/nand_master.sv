@@ -45,54 +45,7 @@ module nand_master(clk,enable,nand_cle,nand_ale,nand_nwe,nand_nwp,nand_nce,nand_
 	input activate;
 	input [7:0] cmd_in;
 
-	
-	// Asynchronous command latch interface.
-	latch_unit ACL 
-	(
-		.latch_type (`LATCH_CMD),
-		.activate (cle_activate),
-		.latch_ctrl (cle_latch_ctrl),
-		.write_enable (cle_write_enable),
-		.busy (cle_busy),
-		.clk (clk),
-		.data_in (cle_data_in),
-		.data_out (cle_data_out)
-	);
 
-	// Asynchronous address latch interface.
-	latch_unit AAL (
-		.latch_type (`LATCH_ADDR),
-		.activate (ale_activate),
-		.latch_ctrl (ale_latch_ctrl),
-		.write_enable (ale_write_enable),
-		.busy (ale_busy),
-		.clk (clk),
-		.data_in (ale_data_in),
-		.data_out (ale_data_out)
-	);
-	
-	// Output to NAND
-	io_unit IO_WR (
-		.io_type (`IO_WRITE),
-		.clk (clk),
-		.activate (io_wr_activate),
-		.data_in (io_wr_data_in),
-		.data_out (io_wr_data_out),
-		.io_ctrl (io_wr_io_ctrl),
-		.busy (io_wr_busy)
-	);
-	
-	// Input from NAND
-	io_unit IO_RD (
-		.io_type (`IO_READ),
-		.clk (clk),
-		.activate (io_rd_activate),
-		.data_in (io_rd_data_in),
-		.data_out (io_rd_data_out),
-		.io_ctrl (io_rd_io_ctrl),
-		.busy (io_rd_busy)
-	);
-	
 	// Latch unit related signals
 	reg cle_activate;
 	wire cle_latch_ctrl;
@@ -156,7 +109,54 @@ module nand_master(clk,enable,nand_cle,nand_ale,nand_nwe,nand_nwp,nand_nce,nand_
 	reg [31:0] tmp_int;
 	reg [31:0] tmp;
 
+	
+	// Asynchronous command latch interface.
+	latch_unit ACL 
+	(
+		.latch_type (`LATCH_CMD),
+		.activate (cle_activate),
+		.latch_ctrl (cle_latch_ctrl),
+		.write_enable (cle_write_enable),
+		.busy (cle_busy),
+		.clk (clk),
+		.data_in (cle_data_in),
+		.data_out (cle_data_out)
+	);
 
+	// Asynchronous address latch interface.
+	latch_unit AAL (
+		.latch_type (`LATCH_ADDR),
+		.activate (ale_activate),
+		.latch_ctrl (ale_latch_ctrl),
+		.write_enable (ale_write_enable),
+		.busy (ale_busy),
+		.clk (clk),
+		.data_in (ale_data_in),
+		.data_out (ale_data_out)
+	);
+	
+	// Output to NAND
+	io_unit IO_WR (
+		.io_type (`IO_WRITE),
+		.clk (clk),
+		.activate (io_wr_activate),
+		.data_in (io_wr_data_in),
+		.data_out (io_wr_data_out),
+		.io_ctrl (io_wr_io_ctrl),
+		.busy (io_wr_busy)
+	);
+	
+	// Input from NAND
+	io_unit IO_RD (
+		.io_type (`IO_READ),
+		.clk (clk),
+		.activate (io_rd_activate),
+		.data_in (io_rd_data_in),
+		.data_out (io_rd_data_out),
+		.io_ctrl (io_rd_io_ctrl),
+		.busy (io_rd_busy)
+	);
+	
 always @(posedge clk) begin
 
 	// Busy indicator
