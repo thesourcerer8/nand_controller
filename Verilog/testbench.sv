@@ -55,7 +55,8 @@ module tb ();
 		.data_in  (data_in),
 		.busy     (busy),
 		.activate (activate),
-		.cmd_in   (cmd_in)
+		.cmd_in   (cmd_in),
+		.enable   (1'b1)
 	);
 
 
