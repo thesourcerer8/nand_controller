@@ -80,7 +80,7 @@ begin
 	
 	// Enable the chip
 	#5;
-	cmd_in = 8'h09;
+	cmd_in = `MI_CHIP_ENABLE;
 	activate = 1'b1;
 	#2;
 	activate = 1'b0;
@@ -88,7 +88,7 @@ begin
 	
 	// Read JEDEC ID
 	data_in = 8'h00;
-	cmd_in = 8'h03;
+	cmd_in = `M_NAND_READ_ID;
 	#5;
 	activate = 1'b1;
 	#2;
@@ -110,7 +110,7 @@ begin
 	#5;
 	
 	// Read the bytes of the ID
-	cmd_in = 8'h0e;
+	cmd_in = `MI_GET_ID_BYTE;
 	// 1
 	activate = 1'b1;
 	#2;
@@ -136,12 +136,22 @@ begin
 	#2;
 	activate = 1'b0;
 	
-	cmd_in = 8'h08;
+	cmd_in = `MI_GET_STATUS;
 	#2;
 	activate = 1'b1;
 	#2;
 	activate = 1'b0;
 	#2;	
+
+	cmd_in = `M_NAND_READ;
+	#2;
+	activate = 1'b1;
+	#2;
+	activate = 1'b0;
+	#2;	
+
+
+
 	$display ("T=%0t End of simulation", $realtime);
 	$finish;
 end
