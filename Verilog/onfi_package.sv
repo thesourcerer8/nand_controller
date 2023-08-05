@@ -75,13 +75,15 @@
 `define MI_GET_PARAM_PAGE_BYTE 6'd20			// Gets page_param(page_idx) byte.
 `define MI_GET_DATA_PAGE_BYTE 6'd21			// Gets page_data(page_idx) byte.
 `define MI_SET_DATA_PAGE_BYTE 6'd22 			// Sets value at page_data(page_idx).
-`define MI_GET_CURRENT_ADDRESS_BYTE 6'd23			// Gets current_address(page_idx) byte.
-`define MI_SET_CURRENT_ADDRESS_BYTE 6'd24			// Sets value at current_address(page_idx).
+`define MI_GET_CURRENT_ADDRESS_BYTE 6'd23		// Gets current_address(page_idx) byte.
+`define MI_SET_CURRENT_ADDRESS_BYTE 6'd24		// Sets value at current_address(page_idx).
 // Command processor bypass commands
 `define MI_BYPASS_ADDRESS 6'd25				// Send address byte directly to NAND chip
-`define MI_BYPASS_COMMAND 6'd26 				// Send command byte directly to NAND chip
-`define MI_BYPASS_DATA_WR 6'd27 				// Send data byte directly to NAND chip
+`define MI_BYPASS_COMMAND 6'd26 			// Send command byte directly to NAND chip
+`define MI_BYPASS_DATA_WR 6'd27 			// Send data byte directly to NAND chip
 `define MI_BYPASS_DATA_RD 6'd28				// Read data byte directly from NAND chip
+`define M_SET_PAGESIZE 6'd29				// Set the pagesize
+`define M_GET_PAGESIZE 6'd30				// Get the pagesize
 //	} master_state_t;
 
 	
