@@ -43,7 +43,7 @@ module nand_master(clk,enable,nand_cle,nand_ale,nand_nwe,nand_nwp,nand_nce,nand_
 	input [7:0] data_in;
 	output reg busy; // := '0';
 	input activate;
-	input [7:0] cmd_in;
+	input [5:0] cmd_in;
 
 
 	// Latch unit related signals
@@ -78,10 +78,10 @@ module nand_master(clk,enable,nand_cle,nand_ale,nand_nwe,nand_nwp,nand_nce,nand_
 	wire [15:0] io_wr_data_out;
 	
 	// FSM
-	reg [5:0] state; // = `M_RESET;
-	reg [5:0] n_state; //= `M_RESET;
-	reg [4:0] substate; // := MS_BEGIN;
-	reg [4:0] n_substate; // := MS_BEGIN;
+	reg [5:0] state = `M_RESET;
+	reg [5:0] n_state = `M_RESET;
+	reg [4:0] substate = `MS_BEGIN;
+	reg [4:0] n_substate = `MS_BEGIN;
 	
 	reg [31:0] delay=0;
 	
@@ -205,6 +205,7 @@ always @(posedge clk) begin
 			(state == `M_NAND_READ_ID & substate == `MS_BEGIN) |			// initiate submission of READ ID command
 			(state == `MI_BYPASS_COMMAND & substate == `MS_SUBMIT_COMMAND) ) begin 	// direct command byte submission
 		cle_activate = 1'b1;
+		$display ("NAND_RESET initiated");
 	end else begin
 		cle_activate = 1'b0;
 	end
@@ -275,7 +276,7 @@ always @(posedge clk) begin
 				// This is in fact a command interpreter
 				`M_IDLE: begin
 					if(activate == 1'b1) begin
-						state= cmd_in;
+						state= cmd_in[5:0];
 					end
 				end	
 				// Reset the NAND chip
@@ -425,7 +426,7 @@ always @(posedge clk) begin
 						byte_count = 0;
 					end else if(substate == `MS_SUBMIT_COMMAND) begin
 						byte_count = byte_count + 1;
-						ale_data_in = 8'h00 & current_address[byte_count];
+						ale_data_in = {8'h00 ,current_address[byte_count]};
 						substate = `MS_SUBMIT_ADDRESS;
 					end else if(substate == `MS_SUBMIT_ADDRESS) begin
 						if(byte_count < addr_cycles) begin
@@ -445,7 +446,7 @@ always @(posedge clk) begin
 					end else if(substate == `MS_WRITE_DATA1) begin
 						byte_count = byte_count + 1;
 						page_idx = page_idx + 1;
-						io_wr_data_in= 8'h00 & page_data[page_idx];
+						io_wr_data_in={ 8'h00 , page_data[page_idx] };
 						if(status[1] == 1'b0) begin
 							substate = `MS_WRITE_DATA3;
 						end else begin
@@ -704,22 +705,22 @@ always @(posedge clk) begin
 								data_bytes_per_page 	= tmp_int;
 								
 								// Number of spare bytes per page (OOB)
-								tmp_int			= {6'b0,page_param[85],page_param[84]};
+								tmp_int			= {16'b0,page_param[85],page_param[84]};
 								oob_bytes_per_page	= tmp_int;
 								
 								// Number of address cycles
-								addr_cycles		= page_param[101][3:0] + page_param[101][7:4];
+								addr_cycles		= 11'(page_param[101][3:0]) + 11'(page_param[101][7:4]);
 							end else begin
 								// Number of bytes per page
 								tmp_int			= {page_param[82],page_param[81],page_param[80],page_param[79]};
 								data_bytes_per_page 	= tmp_int;
 								
 								// Number of spare bytes per page (OOB)
-								tmp_int			= {62'b0,page_param[84],page_param[83]};
+								tmp_int			= {16'b0,page_param[84],page_param[83]};
 								oob_bytes_per_page	= tmp_int;
 								
 								// Number of address cycles
-								addr_cycles		= page_param[100][3:0] + page_param[100][7:4];
+								addr_cycles		= 11'(page_param[100][3:0]) + 11'(page_param[100][7:4]);
 							end
 						end
 					end

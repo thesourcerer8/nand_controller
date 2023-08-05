@@ -29,9 +29,9 @@ module latch_unit (clk,activate,data_in,latch_ctrl,write_enable,busy,data_out,la
 `define LATCH_WAIT  2'b10
 `define LATCH_DELAY 2'b11
 
-	reg [3:0] state; // = LATCH_IDLE;
-	reg [3:0] n_state; // = LATCH_IDLE;
-	reg delay = 0;
+	reg [1:0] state; // = LATCH_IDLE;
+	reg [1:0] n_state; // = LATCH_IDLE;
+	reg [31:0] delay = 0;
 	reg busy =0;
 	reg latch_ctrl=0;
 	reg write_enable=1;
