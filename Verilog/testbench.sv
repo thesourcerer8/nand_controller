@@ -76,7 +76,7 @@ module tb ();
 		.busy     (busy),
 		.activate (activate),
 		.cmd_in   (cmd_in),
-		.enable   (1'b1)
+		.enable   (1'b0)
 	);
 
 
@@ -101,6 +101,11 @@ begin
 	activate = 1'b0;
 	nreset = 1'b1;
 	nand_data_drive = "ZZ";
+	#10
+	nreset = 1'b0;
+	#2
+	nreset = 1'b1;
+	#2
 
         // Should we do a RESET or does the controller do it itself?
 	
