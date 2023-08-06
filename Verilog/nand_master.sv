@@ -106,7 +106,7 @@ module nand_master(clk,enable,nand_cle,nand_ale,nand_nwe,nand_nwp,nand_nce,nand_
 //	5 - 
 //	6 - 
 //	7 - 
-	reg [7:0] status=8'h00;
+	reg [7:0] status=8'h08;
 	reg [31:0] tmp_int;
 	reg [31:0] tmp;
 
@@ -247,17 +247,19 @@ always @(posedge clk) begin
 
 
 	//MASTER: process(clk, nreset, activate, cmd_in, data_in, state_switch)
-	//always @(posedge clk) begin
 
 		if(nreset == 1'b0) begin
+			//$display("NRESET SIGNAL RECEIVED, INITIATING RESET");
 			state = `M_RESET;
 		end
 //		end else if(activate = '1') begin
 //			state	<= state_switch(to_integer(unsigned(cmd_in)));
 		else if(enable == 1'b0) begin
+			//$display("STATE MACHINE RUNNING");
 			case(state)
 				// RESET state. Speaks for itself
 				`M_RESET: begin
+					$display("RESET LOGIC EXECUTING");
 					state = `M_IDLE;
 					substate = `MS_BEGIN;
 					delay = 0;
