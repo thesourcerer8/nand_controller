@@ -12,8 +12,8 @@
 //
 /* verilator lint_off STMTDLY */
 
-`timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
 `include "nand_master.sv"
+`include "timescale.sv"
 
 module tb ();
 	reg clk =1'b1;

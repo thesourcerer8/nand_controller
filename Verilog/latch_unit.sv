@@ -11,6 +11,7 @@
 //-----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------
 
+`include "timescale.sv"
 
 module latch_unit (clk,activate,data_in,latch_ctrl,write_enable,busy,data_out,latch_type);
 	//generic (latch_type : latch_t);

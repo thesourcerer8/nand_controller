@@ -18,6 +18,7 @@
 `include "onfi_package.sv"
 `include "latch_unit.sv"
 `include "io_unit.sv"
+`include "timescale.sv"
 
 module nand_master(clk,enable,nand_cle,nand_ale,nand_nwe,nand_nwp,nand_nce,nand_nre,nand_rnb,nand_data,nreset,data_out,data_in,busy,activate,cmd_in);
 
@@ -219,6 +220,7 @@ always @(posedge clk) begin
 			(state == `MI_BYPASS_ADDRESS  &  substate == `MS_SUBMIT_ADDRESS) ) begin	// direct address byte submission
 
 		ale_activate = 1'b1;
+		$display("Address Latch unit activated");
 	end else begin
 		ale_activate = 1'b0;
 	end
