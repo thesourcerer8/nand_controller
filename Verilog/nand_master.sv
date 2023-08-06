@@ -350,7 +350,7 @@ always @(posedge clk) begin
 					if(page_idx < 256) begin
 						data_out = page_param[page_idx];
 						page_idx = page_idx + 1;
-						status[4]<= 1'b0;
+						status[4] = 1'b0;
 					end else begin
 						data_out = 8'h00;
 						page_idx = 0;
