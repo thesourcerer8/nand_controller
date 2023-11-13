@@ -10,7 +10,9 @@
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 
-`include "timescale.sv"
+//`include "timescale.sv"
+`timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
+
 
 module io_unit(clk,activate,data_in,io_ctrl,data_out,busy,io_type);
 	//generic (io_type : io_t);
