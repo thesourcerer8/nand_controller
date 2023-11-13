@@ -18,7 +18,9 @@
 `include "onfi_package.sv"
 `include "latch_unit.sv"
 `include "io_unit.sv"
-`include "timescale.sv"
+//`include "timescale.sv"
+`timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
+
 
 module nand_master(clk,enable,nand_cle,nand_ale,nand_nwe,nand_nwp,nand_nce,nand_nre,nand_rnb,nand_data,nreset,data_out,data_in,busy,activate,cmd_in);
 
@@ -31,11 +33,12 @@ module nand_master(clk,enable,nand_cle,nand_ale,nand_nwe,nand_nwp,nand_nce,nand_
 	output reg nand_nwe=1; // := '1';
 	output reg nand_nwp=0; // := '0';
 	output reg nand_nce=1; // := '1';
-	output reg nand_nre=1; // := '1';
+	output reg nand_nre=0; // := '1';
 	input nand_rnb;
 	// NAND chip data hardware interface. These signals should be boiund to physical pins.
 	inout [15:0] nand_data;
 	reg [15:0] nand_data_reg;
+	wire [15:0] nand_data_recv;
 	assign nand_data = nand_data_reg;
 		
 	// Component interface
@@ -176,7 +179,7 @@ always @(posedge clk) begin
 	end else if (io_wr_busy == 1'b1) begin
 		nand_data_reg = io_wr_data_out;
 	end else begin
-		nand_data_reg = 0;
+		nand_data_reg = 16'hZZZZ;
 	end
 
 	io_rd_data_in = nand_data;
@@ -276,6 +279,7 @@ always @(posedge clk) begin
 					status	= 8'h08;		// We start write protected!
 					nand_nce = 1'b1;
 					nand_nwp = 1'b0;
+					nand_nre = 1'b1;
 				end	
 				// This is in fact a command interpreter
 				`M_IDLE: begin

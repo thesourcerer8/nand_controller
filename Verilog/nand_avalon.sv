@@ -1,4 +1,6 @@
 
+`timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
+
 
 module nand_avalon (clk,resetn,readdata,writedata,pread,pwrite,address,nand_cle,nand_ale,nand_nwe,nand_nwp,nand_nce,nand_nre,nand_rnb,nand_data);
 	input clk; // =0

@@ -11,7 +11,9 @@
 //-----------------------------------------------------------------------------------------------
 //-----------------------------------------------------------------------------------------------
 
-`include "timescale.sv"
+//`include "timescale.sv"
+`timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
+
 
 module latch_unit (clk,activate,data_in,latch_ctrl,write_enable,busy,data_out,latch_type);
 	//generic (latch_type : latch_t);
