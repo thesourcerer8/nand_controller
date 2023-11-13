@@ -13,9 +13,11 @@
 /* verilator lint_off STMTDLY */
 
 `include "nand_master.sv"
-`include "timescale.sv"
+//`include "timescale.sv"
+`timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
 
-module tb ();
+
+module testbench ();
 	reg clk =1'b1;
 
 	// Internal interface
@@ -40,7 +42,7 @@ module tb ();
 	reg [15:0]nand_data_drive;
 	wire [15:0]nand_data_recv;
 
-	assign nand_data= nand_data_drive;
+	assign nand_data=nand_data_drive;
 	assign nand_data_recv=nand_data;
 
 	// Wiring up the IOs as explicit pins so that Sigrok can see them
@@ -84,23 +86,23 @@ module tb ();
 always
 begin
 	clk = 1'b1;
-	#1;
+	#1.25ns;
 	clk = 1'b0;
-	#1;
+	#1.25ns;
 end
 
 
 initial
 begin
 	$dumpfile("testbench.vcd");
-	$dumpvars(0,tb);
+	$dumpvars(0,testbench);
 	$timeformat(-9, 0, "ns", 8);
 
 	$display ("T=%0t Start of simulation", $realtime);
         #1 
 	activate = 1'b0;
 	nreset = 1'b1;
-	nand_data_drive = "ZZ";
+	nand_data_drive = 16'hZZZZ;
 	#10
 	nreset = 1'b0;
 	#2
@@ -121,134 +123,160 @@ begin
 	
 	// Enable the chip
 	$display ("T=%0t Enable the chip (0x0E)", $realtime);
-	#5
+	#5ns
 	cmd_in = `MI_CHIP_ENABLE;
 	data_in = 8'h00; // Which CE line?
 	activate = 1'b1;
-	#2
+	#2.5ns
 	activate = 1'b0;
 
 	// We need a NAND RESET 
 	$display ("T=%0t NAND RESET (0x04)", $realtime);
-	#5 
+	#5ns 
 	cmd_in = `M_NAND_RESET;
 	activate = 1'b1;
-	#2
+	#2.5ns
 	activate = 1'b0;
-	#10
+	#2.5ns
+	#100 //wait(~busy);
+	#2.5ns
 	
 	// Read JEDEC ID
+	#2.5ns
 	$display ("T=%0t Read JEDEC ID (0x06)", $realtime);
-	#1
 	data_in = 8'h00;
 	cmd_in = `M_NAND_READ_ID;
-	#5
+	#5ns
 	activate = 1'b1;
-	#2
+	#2.5ns
 	activate = 1'b0;
 
 	// Provide ID
 	$display ("T=%0t Provide ID", $realtime);
-	#155
+	#155ns
 	nand_data_drive = 16'h002c;
-	#32
+	#32.5ns
 	nand_data_drive = 16'h00e5;
-	#32
+	#32.5ns
 	nand_data_drive = 16'h00ff;
-	#32
+	#32.5ns
 	nand_data_drive = 16'h0003;
-	#32
+	#32.5ns
 	nand_data_drive = 16'h0086;
-	#32
-	nand_data_drive = "ZZ";
-	#5
+	#32.5ns
+	nand_data_drive = 16'hZZZZ;
+	#5ns
+
 	
 	// Read the bytes of the ID
 	$display ("T=%0t Read the bytes of the ID (0x13)", $realtime);
 	cmd_in = `MI_GET_ID_BYTE;
 	// 1
 	activate = 1'b1;
-	#2
+	#2.5ns
 	activate = 1'b0;
-	#2
+	#2.5ns
 	$display ("T=%0t ID0: %h", $realtime, data_out);
 	// 2
 	activate = 1'b1;
-	#2
+	#2.5ns
 	activate = 1'b0;
-	#2
+	#2.5ns
 	$display ("T=%0t ID1: %h", $realtime, data_out);
 	// 3
 	activate = 1'b1;
-	#2
+	#2.5ns
 	activate = 1'b0;
-	#2
+	#2.5ns
 	$display ("T=%0t ID2: %h", $realtime, data_out);
 	// 4
 	activate = 1'b1;
-	#2
+	#2.5ns
 	activate = 1'b0;
-	#2
+	#2.5ns
 	$display ("T=%0t ID3: %h", $realtime, data_out);
 	// 5
 	activate = 1'b1;
-	#2
+	#2.5ns
 	activate = 1'b0;
+	#2.5ns
+	$display ("T=%0t ID4: %h", $realtime, data_out);
+	// 5
+	activate = 1'b1;
+	#2.5ns
+	activate = 1'b0;
+	#2.5ns
+	$display ("T=%0t ID4: %h", $realtime, data_out);
+	// 5
+	activate = 1'b1;
+	#2.5ns
+	activate = 1'b0;
+	#2.5ns
+	$display ("T=%0t ID4: %h", $realtime, data_out);
+	// 5
+	activate = 1'b1;
+	#2.5ns
+	activate = 1'b0;
+	#2.5ns
 	$display ("T=%0t ID4: %h", $realtime, data_out);
 
+
+
+
+	#10ns
 
 	// GET STATUS
 	$display ("T=%0t Get Status (0x0D)", $realtime);
 	cmd_in = `MI_GET_STATUS;
-	#2
+	#2.5ns
 	activate = 1'b1;
-	#2
+	#2.5ns
 	activate = 1'b0;
-	#2	
+	#2.5ns	
 	$display ("Status: %h", data_out);
+
 
 	// Perhaps the READ PAGE needs a Reset Buffer Index so that it writes
 	// it at the right place
 	$display ("T=%0t Reset Buffer Index (0x12)", $realtime);
 	cmd_in = `MI_RESET_INDEX;
-	#2
+	#2.5ns
 	activate = 1'b1;
-	#2
+	#2.5ns
 	activate = 1'b0;
-	#2	
+	#2.5ns	
 
 
 	// READ PAGE
 	$display ("T=%0t NAND READ Page into internal buffer (0x09)", $realtime);
 	cmd_in = `M_NAND_READ;
-	#2
+	#2.5ns
 	activate = 1'b1;
-	#2
+	#2.5ns
 	activate = 1'b0;
-	#2
-        #10
+	#2.5ns
+        #10ns
+
 
 	// Resetting the Buffer index again to make sure we read it from the
 	// start
 	$display ("T=%0t Reset Buffer Index (0x12)", $realtime);
 	cmd_in = `MI_RESET_INDEX;
-	#2
+	#2.5ns
 	activate = 1'b1;
-	#2
+	#2.5ns
 	activate = 1'b0;
-	#2	
+	#2.5ns	
 
 	// Now we can read each byte
 	$display ("T=%0t Read Data Page Byte (0x15)", $realtime);
 	cmd_in = `MI_GET_DATA_PAGE_BYTE;
-	#2
+	#2.5ns
 	activate = 1'b1;
-	#2
+	#2.5ns
 	activate = 1'b0;
-	#2
+	#2.5ns
 	$display ("Data Page Byte: %h", data_out);
-
-
 
 
 	$display ("T=%0t End of simulation", $realtime);
