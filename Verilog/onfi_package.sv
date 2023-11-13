@@ -11,12 +11,14 @@
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 
-`include "timescale.sv"
+//`include "timescale.sv"
+`timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
+
 
 //package global;
 	// Clock cycle length in ns
 	// IMPORTANT!!! The 'clock_cycle' is configured for 400MHz, change it appropriately!
-`define clock_cycle 2
+`define clock_cycle 2.5
 
 	// NAND interface delays.
 	// Delays of 7.5ns may need to be fixed to 7.0.
