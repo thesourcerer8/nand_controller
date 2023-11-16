@@ -104,7 +104,7 @@ module testbench ();
 		.RENeg (nand_nre),
 		.WENeg (nand_nwe),
 		.WPNeg (nand_nwp),
-    		.R (NM.nand_rnb)
+    		.R (nand_rnb)
 	);
 
 
