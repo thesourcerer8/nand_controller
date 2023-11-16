@@ -18,7 +18,7 @@ verilator:
 	verilator -sc testbench.sv  --coverage
 
 iverilogs:
-	iverilog -o testbenchs34 testbenchs34.sv -Wall -g2005-sv -s testbench k9f1208.v
+	iverilog -o testbenchs34 testbenchs34.sv -Wall -g2005-sv -s testbench k9f1208.sv
 	vvp testbenchs34
 	sigrok-cli -i testbenchs34.vcd -C nand_nwp,nand_nwe,nand_nre,nand_nce,nand_cle,nand_ale -o testbenchs34.sr
 	sigrok-cli -i testbenchs34.sr -P onfi -A onfi --protocol-decoder-samplenum || true
