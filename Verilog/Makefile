@@ -2,6 +2,7 @@ all: iverilog verilator
 
 dependencies: 
 	sudo apt-get install iverilog yosys verilator gtkwave sigrok-cli pulseview libsigrok-dev
+	sudo ln -s `realpath ../SigRok` /usr/share/libsigrokdecode/decoders/onfi
 
 iverilog:
 	iverilog -o testbench testbench.sv -Wall -g2005-sv
