@@ -99,7 +99,7 @@ begin
 	$timeformat(-9, 0, "ns", 8);
 
 	$display ("T=%0t Start of simulation", $realtime);
-        #1 
+        #1
 	activate = 1'b0;
 	nreset = 1'b1;
 	nand_data_drive = 16'hZZZZ;
@@ -110,7 +110,7 @@ begin
 	#2
 
         // Should we do a RESET or does the controller do it itself?
-	
+
 	// RESET the flash controller
 	$display ("T=%0t Reset the controller (0x01)", $realtime);
 	#5
@@ -120,7 +120,7 @@ begin
 	activate = 1'b0;
 
 
-	
+
 	// Enable the chip
 	$display ("T=%0t Enable the chip (0x0E)", $realtime);
 	#5ns
@@ -130,17 +130,17 @@ begin
 	#2.5ns
 	activate = 1'b0;
 
-	// We need a NAND RESET 
+	// We need a NAND RESET
 	$display ("T=%0t NAND RESET (0x04)", $realtime);
-	#5ns 
+	#5ns
 	cmd_in = `M_NAND_RESET;
 	activate = 1'b1;
 	#2.5ns
 	activate = 1'b0;
 	#2.5ns
-	#100 //wait(~busy);
+	#150 //wait(~busy);
 	#2.5ns
-	
+
 	// Read JEDEC ID
 	#2.5ns
 	$display ("T=%0t Read JEDEC ID (0x06)", $realtime);
@@ -167,7 +167,7 @@ begin
 	nand_data_drive = 16'hZZZZ;
 	#5ns
 
-	
+
 	// Read the bytes of the ID
 	$display ("T=%0t Read the bytes of the ID (0x13)", $realtime);
 	cmd_in = `MI_GET_ID_BYTE;
@@ -176,52 +176,63 @@ begin
 	#2.5ns
 	activate = 1'b0;
 	#2.5ns
+	#10ns
 	$display ("T=%0t ID0: %h", $realtime, data_out);
+
 	// 2
 	activate = 1'b1;
 	#2.5ns
 	activate = 1'b0;
 	#2.5ns
+	#10ns
 	$display ("T=%0t ID1: %h", $realtime, data_out);
+
 	// 3
 	activate = 1'b1;
 	#2.5ns
 	activate = 1'b0;
 	#2.5ns
+	#10ns
 	$display ("T=%0t ID2: %h", $realtime, data_out);
+
 	// 4
 	activate = 1'b1;
 	#2.5ns
 	activate = 1'b0;
 	#2.5ns
+	#10ns
 	$display ("T=%0t ID3: %h", $realtime, data_out);
+
 	// 5
 	activate = 1'b1;
 	#2.5ns
 	activate = 1'b0;
 	#2.5ns
-	$display ("T=%0t ID4: %h", $realtime, data_out);
-	// 5
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
-	$display ("T=%0t ID4: %h", $realtime, data_out);
-	// 5
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
-	$display ("T=%0t ID4: %h", $realtime, data_out);
-	// 5
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	#10ns
 	$display ("T=%0t ID4: %h", $realtime, data_out);
 
+	// 5
+	activate = 1'b1;
+	#2.5ns
+	activate = 1'b0;
+	#2.5ns
+	#10ns
+	$display ("T=%0t ID4: %h", $realtime, data_out);
 
+	// 5
+	activate = 1'b1;
+	#2.5ns
+	activate = 1'b0;
+	#2.5ns
+	$display ("T=%0t ID4: %h", $realtime, data_out);
+	#10ns
 
+	// 5
+	activate = 1'b1;
+	#2.5ns
+	activate = 1'b0;
+	#2.5ns
+	$display ("T=%0t ID4: %h", $realtime, data_out);
 
 	#10ns
 
@@ -232,7 +243,7 @@ begin
 	activate = 1'b1;
 	#2.5ns
 	activate = 1'b0;
-	#2.5ns	
+	#2.5ns
 	$display ("Status: %h", data_out);
 
 
@@ -244,7 +255,12 @@ begin
 	activate = 1'b1;
 	#2.5ns
 	activate = 1'b0;
-	#2.5ns	
+	#2.5ns
+
+	$display ("Waiting at %0t ... busy: %d",$realtime,busy);
+	//wait (busy == 1'b0);
+	$display ("Waiting done at %0t ...",$realtime);
+
 
 
 	// READ PAGE
@@ -266,7 +282,7 @@ begin
 	activate = 1'b1;
 	#2.5ns
 	activate = 1'b0;
-	#2.5ns	
+	#2.5ns
 
 	// Now we can read each byte
 	$display ("T=%0t Read Data Page Byte (0x15)", $realtime);
@@ -278,6 +294,8 @@ begin
 	#2.5ns
 	$display ("Data Page Byte: %h", data_out);
 
+
+	#5ns
 
 	$display ("T=%0t End of simulation", $realtime);
 	$finish;
