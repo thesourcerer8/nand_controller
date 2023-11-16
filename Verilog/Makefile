@@ -1,7 +1,8 @@
 all: iverilogs verilators
 
 dependencies: 
-	sudo apt-get install iverilog yosys verilator gtkwave sigrok-cli pulseview libsigrok-dev
+	sudo apt-get install iverilog yosys gtkwave sigrok-cli pulseview libsigrok-dev
+	echo Build verilator from source to get a more recent version
 	sudo ln -s `realpath ../SigRok` /usr/share/libsigrokdecode/decoders/onfi
 
 iverilog:
