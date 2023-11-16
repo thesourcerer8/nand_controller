@@ -949,10 +949,11 @@ specify
     begin
         // sample new address or data
         if ( ~WENeg && ~CENeg )
+	begin
             A_tmp    = A[7:0];
             D_tmp    = DIn[7:0];
         end
-
+    end
     always @( negedge WENeg)
     begin
         // sample new address or data
