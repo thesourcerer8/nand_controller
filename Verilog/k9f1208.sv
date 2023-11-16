@@ -382,62 +382,62 @@ module k9f1208
     wire Check_CENeg_posedge;
     assign Check_CENeg_posedge = TRANSFER;
 
-specify
-
     // tipd delays: interconnect path delays , mapped to input port delays.
     // In Verilog is not necessary to declare any tipd_ delay variables,
     // they can be taken from SDF file
     // With all the other delays real delays would be taken from SDF file
 
-    specparam       tpd_CENeg_IO0           =   1;//tcea, tchz
-    specparam       tpd_RENeg_IO0           =   1;//trea, trhZ
-    specparam       tpd_WENeg_R             =   1;//twb
-    specparam       tpd_RENeg_R             =   1;//trb
-    specparam       tpd_CENeg_R             =   1;//tcry
+    parameter int       tpd_CENeg_IO0           =   1;//tcea, tchz
+    parameter int       tpd_RENeg_IO0           =   1;//trea, trhZ
+    parameter int       tpd_WENeg_R             =   1;//twb
+    parameter int       tpd_RENeg_R             =   1;//trb
+    parameter int       tpd_CENeg_R             =   1;//tcry
 
     //tsetup values
-    specparam       tsetup_CLE_WENeg        =   1;//tcls edge \
-    specparam       tsetup_CENeg_WENeg      =   1;//tcs edge \
-    specparam       tsetup_ALE_WENeg        =   1;//tals edge \
-    specparam       tsetup_IO0_WENeg        =   1;//tds edge /
-    specparam       tsetup_ALE_RENeg        =   1;//tclr edge \
-    specparam       tsetup_CLE_RENeg        =   1;//tar edge \
-    specparam       tsetup_WENeg_RENeg      =   1;//twhr edge \
+    parameter int       tsetup_CLE_WENeg        =   1;//tcls edge \
+    parameter int       tsetup_CENeg_WENeg      =   1;//tcs edge \
+    parameter int       tsetup_ALE_WENeg        =   1;//tals edge \
+    parameter int       tsetup_IO0_WENeg        =   1;//tds edge /
+    parameter int       tsetup_ALE_RENeg        =   1;//tclr edge \
+    parameter int       tsetup_CLE_RENeg        =   1;//tar edge \
+    parameter int       tsetup_WENeg_RENeg      =   1;//twhr edge \
 
     //thold values
-    specparam       thold_CLE_WENeg         =   1;//tclh edge /
-    specparam       thold_CENeg_WENeg       =   1;//tch edge /
-    specparam       thold_ALE_WENeg         =   1;//talh edge /
-    specparam       thold_IO0_WENeg         =   1;//tdh edge /
+    parameter int       thold_CLE_WENeg         =   1;//tclh edge /
+    parameter int       thold_CENeg_WENeg       =   1;//tch edge /
+    parameter int       thold_ALE_WENeg         =   1;//talh edge /
+    parameter int       thold_IO0_WENeg         =   1;//tdh edge /
 
     //tpw values
-    specparam       tpw_WENeg_negedge       =   1;//twp
-    specparam       tpw_WENeg_posedge       =   1;//twh
-    specparam       tpw_RENeg_negedge       =   1;//trp
-    specparam       tpw_RENeg_posedge       =   1;//treh
-    specparam       tpw_CENeg_posedge       =   1;//tceh
-    specparam       tperiod_WENeg           =   1;//twc
-    specparam       tperiod_RENeg           =   1;//trc
+    parameter int       tpw_WENeg_negedge       =   1;//twp
+    parameter int       tpw_WENeg_posedge       =   1;//twh
+    parameter int       tpw_RENeg_negedge       =   1;//trp
+    parameter int       tpw_RENeg_posedge       =   1;//treh
+    parameter int       tpw_CENeg_posedge       =   1;//tceh
+    parameter int       tperiod_WENeg           =   1;//twc
+    parameter int       tperiod_RENeg           =   1;//trc
 
     //Other hold timings
-    specparam thold_IO0_RENeg               =   1;//toh
-    specparam thold_IO0_CENeg               =   1;//toh
+    parameter int thold_IO0_RENeg               =   1;//toh
+    parameter int thold_IO0_CENeg               =   1;//toh
 
     //tdevice values: values for internal delays
     // Program Operation
-    specparam       tdevice_PROG            =   200000;
+    parameter int       tdevice_PROG            =   200000;
     //Block Erase Operation
-    specparam       tdevice_BERS            =   2000000;
+    parameter int       tdevice_BERS            =   2000000;
     //Dummy busy time
-    specparam       tdevice_DBSY            =   1000;
+    parameter int       tdevice_DBSY            =   1000;
     //Data transfer time
-    specparam       tdevice_TR              =   15000;
+    parameter int       tdevice_TR              =   15000;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Input Port  Delays  don't require Verilog description
 ///////////////////////////////////////////////////////////////////////////////
 // Path delays                                                               //
 ///////////////////////////////////////////////////////////////////////////////
+
+specify
 
 // specify transport delay for Data output paths
     specparam       PATHPULSE$CENeg$IO0     =   (0);
@@ -457,6 +457,7 @@ specify
     specparam       PATHPULSE$RENeg$IO5     =   (0);
     specparam       PATHPULSE$RENeg$IO6     =   (0);
     specparam       PATHPULSE$RENeg$IO7     =   (0);
+
 
 // Data ouptut paths
     if (FROMCE)
