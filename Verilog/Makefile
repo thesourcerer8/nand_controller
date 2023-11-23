@@ -4,6 +4,10 @@ all: iverilogs verilators
 %.vcd: %.sv
 	iverilog -o $@ $< -Wall -g2005-sv
 
+clean:
+	rm -f *.vcd
+	rm -f *.log
+
 dependencies: 
 	sudo apt-get install iverilog yosys gtkwave sigrok-cli pulseview libsigrok-dev
 	echo Build verilator from source to get a more recent version
