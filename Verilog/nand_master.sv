@@ -297,6 +297,7 @@ always @(posedge clk) begin
 				end	
 				// Read the status register of the controller
 				`MI_GET_STATUS: begin
+					$display("NM: MI_GET_STATUS received");
 					data_out = status;
 					state    = `M_IDLE;
 				end	
@@ -309,12 +310,14 @@ always @(posedge clk) begin
 				end
 				// Set CE# to 1'b1 (disable NAND chip)
 				`MI_CHIP_DISABLE: begin
+					$display("NM: MI_CHIP_DISABLE received");
 					nand_nce = 1'b1;
 					state	 = `M_IDLE;
 					status[2]= 1'b0;
 				end
 				// Set WP# to 1'b0 (enable write protection)
 				`MI_WRITE_PROTECT: begin
+					$display("NM: MI_WRITE_PROTECT received");
 					nand_nwp = 1'b0;
 					status[3]= 1'b1;
 					state	 = `M_IDLE;
@@ -322,6 +325,7 @@ always @(posedge clk) begin
 				// Set WP# to 1'b1 (disable write protection)
 				// By default, this controller has WP# set to 0 on reset
 				`MI_WRITE_ENABLE: begin
+					$display("NM: MI_WRITE_ENABLE received");
 					nand_nwp = 1'b1;
 					status[3]= 1'b0;
 					state	 = `M_IDLE;
@@ -330,6 +334,7 @@ always @(posedge clk) begin
 				// Index register holds offsets into JEDEC ID, Parameter Page buffer or Data Page buffer depending on
 				// the operation being performed
 				`MI_RESET_INDEX: begin
+					$display("NM: MI_RESET_INDEX received");
 					page_idx = 0;
 					state	 = `M_IDLE;
 				end	
@@ -372,6 +377,7 @@ always @(posedge clk) begin
 				// valid page content, its value is reset and bit 4 of the status
 				// register is set to 1'b1
 				`MI_GET_DATA_PAGE_BYTE: begin
+					$display("NM: MI_GET_DATA_PAGE_BYTE received");
 					if(page_idx < data_bytes_per_page + oob_bytes_per_page) begin
 						data_out = page_data[page_idx];
 						page_idx = page_idx + 1;
@@ -388,6 +394,7 @@ always @(posedge clk) begin
 				// beyond valid page content, its value is reset and bit 4 of
 				// the status register is set to 1'b1
 				`MI_SET_DATA_PAGE_BYTE: begin
+					$display("NM: MI_SET_DATA_PAGE_BYTE received");
 					if(page_idx < data_bytes_per_page + oob_bytes_per_page) begin
 						page_data[page_idx] = data_in;
 						page_idx = page_idx + 1;
@@ -403,6 +410,7 @@ always @(posedge clk) begin
 				// register points beyond valid address data and the value of 
 				// the index register is reset
 				`MI_GET_CURRENT_ADDRESS_BYTE: begin
+					$display("NM: MI_GET_CURRENT_ADDRESS_BYTE received");
 					if(page_idx < addr_cycles) begin
 						data_out = current_address[page_idx];
 						page_idx = page_idx + 1;
@@ -418,6 +426,7 @@ always @(posedge clk) begin
 				// register points beyond valid address data and the value of 
 				// the index register is reset
 				`MI_SET_CURRENT_ADDRESS_BYTE: begin
+					$display("NM: MI_SET_CURRENT_ADDRESS_BYTE received");
 					if(page_idx < addr_cycles) begin
 						current_address[page_idx] = data_in;
 						page_idx = page_idx + 1;
@@ -430,6 +439,7 @@ always @(posedge clk) begin
 				end
 				// Program one page.
 				`M_NAND_PAGE_PROGRAM: begin
+					$display("NM: M_NAND_PAGE_PROGRAM received");
 					if(substate == `MS_BEGIN) begin
 						cle_data_in = 16'h0080;
 						substate= `MS_SUBMIT_COMMAND;
@@ -496,6 +506,7 @@ always @(posedge clk) begin
 				end	
 				// Reads single page into the buffer.
 				`M_NAND_READ: begin
+					$display("NM: M_NAND_READ received");
 					if(substate == `MS_BEGIN) begin
 						cle_data_in	= 16'h0000;
 						substate	= `MS_SUBMIT_COMMAND;
@@ -562,6 +573,7 @@ always @(posedge clk) begin
 				end	
 				// Read status byte
 				`M_NAND_READ_STATUS: begin
+					$display("NM: M_NAND_READ_STATUS received");
 					if(substate == `MS_BEGIN) begin
 						cle_data_in		= 16'h0070;
 						substate		= `MS_SUBMIT_COMMAND;
@@ -587,6 +599,7 @@ always @(posedge clk) begin
 				end	
 				// Erase block specified by current_address
 				`M_NAND_BLOCK_ERASE: begin
+					$display("NM: M_NAND_BLOCK_ERASE received");
 					if(substate == `MS_BEGIN) begin
 						cle_data_in		= 16'h0060;
 						substate		= `MS_SUBMIT_COMMAND;
