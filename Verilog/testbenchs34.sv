@@ -78,7 +78,7 @@ module testbench ();
 		.nand_nwp (nand_nwp),
 		.nand_nce (nand_nce),
 		.nand_nre (nand_nre),
-		.nand_rnb (nand_rnb),
+		.nand_rnb (~nand_rnb),
 		.nand_data(nand_data),
 		.nreset   (nreset),
 		.data_out (data_out),
@@ -121,7 +121,7 @@ end
 
 always
 begin
-	#6400us;
+	#2400ns;
 	$finish;
 end
 
@@ -336,7 +336,7 @@ begin
 	#2.5ns
 	$display ("Data Page Byte: %h", data_out);
 
-
+        #5ns
 	$display ("T=%0t End of simulation", $realtime);
 	$finish;
 end
