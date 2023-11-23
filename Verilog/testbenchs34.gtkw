@@ -1,26 +1,27 @@
 [*]
 [*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
-[*] Thu Nov 23 10:22:05 2023
+[*] Thu Nov 23 10:29:40 2023
 [*]
 [dumpfile] "/home/philipp/Schreibtisch/Projekte/nand_controller/nand_controller/nand_controller/Verilog/testbenchs34.vcd"
-[dumpfile_mtime] "Thu Nov 23 10:13:06 2023"
+[dumpfile_mtime] "Thu Nov 23 10:23:34 2023"
 [dumpfile_size] 4088147
 [savefile] "/home/philipp/Schreibtisch/Projekte/nand_controller/nand_controller/nand_controller/Verilog/testbenchs34.gtkw"
 [timestart] 0
 [size] 1920 1043
-[pos] -101 -101
-*-14.684006 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[pos] -1 -1
+*-15.684006 0 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] testbench.
+[treeopen] testbench.flash.
 [treeopen] testbench.NM.
 [sst_width] 233
-[signals_width] 150
+[signals_width] 252
 [sst_expanded] 1
 [sst_vpaned_height] 298
 @28
 testbench.activate
 testbench.busy
 testbench.clk
-@2023
+@2022
 ^1 /home/philipp/Schreibtisch/Projekte/nand_controller/nand_controller/nand_controller/Verilog/cmd-filter.txt
 testbench.cmd_in[5:0]
 @22
@@ -30,6 +31,8 @@ testbench.data_out[7:0]
 testbench.nand_cle
 @22
 testbench.nand_data[15:0]
+@420
+testbench.flash.READ_DATA.Addr
 @28
 testbench.nand_rnb
 testbench.nand_nce
@@ -52,5 +55,35 @@ testbench.flash.DATA_PRG
 @22
 testbench.flash.DIn[7:0]
 testbench.flash.DOut[7:0]
+@420
+testbench.flash.READ_DATA.Addr
+testbench.flash.READ_DATA.Page
+@28
+testbench.flash.READ_STATUS.mode[1:0]
+@420
+testbench.flash.Func7b.i
+testbench.flash.Func5a.j
+testbench.flash.Func5a.i
+@28
+testbench.flash.reseted
+testbench.flash.rstdone_event
+@22
+testbench.flash.poweredupT[63:0]
+@28
+testbench.flash.oe
+@420
+testbench.flash.RESET
+@22
+testbench.flash.current_state[5:0]
+@28
+testbench.flash.RSTDONE
+testbench.flash.RSTSTART
+@420
+testbench.flash.IDLE
+testbench.flash.DBSY
+@28
+testbench.flash.DBSY_in
+@29
+testbench.flash.DBSY_out
 [pattern_trace] 1
 [pattern_trace] 0
