@@ -1,5 +1,9 @@
 all: iverilogs verilators
 
+
+%.vcd: %.sv
+	iverilog -o $@ $< -Wall -g2005-sv
+
 dependencies: 
 	sudo apt-get install iverilog yosys gtkwave sigrok-cli pulseview libsigrok-dev
 	echo Build verilator from source to get a more recent version
@@ -21,7 +25,7 @@ verilator:
 iverilogs:
 	iverilog -o testbenchs34 testbenchs34.sv -Wall -g2005-sv -s testbench k9f1208.sv
 	vvp testbenchs34
-	sigrok-cli -I vcd -i testbenchs34.vcd -o testbenchs34.sr
+	sigrok-cli -I vcd -i testbenchs34.vcd -o testbenchs34.sr || true
 	sigrok-cli -i testbenchs34.sr -P onfi -A onfi --protocol-decoder-samplenum || true
 	echo gtkwave testbenchs34.vcd
 
