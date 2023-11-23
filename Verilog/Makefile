@@ -8,7 +8,7 @@ dependencies:
 iverilog:
 	iverilog -o testbench testbench.sv -Wall -g2005-sv
 	vvp testbench
-	sigrok-cli -i testbench.vcd -C nand_nwp,nand_nwe,nand_nre,nand_nce,nand_cle,nand_ale,io0,io1,io2,io3,io4,io5,io6,io7 -o testbench.sr
+	sigrok-cli -I vcd -i testbench.vcd -o testbench.sr
 	sigrok-cli -i testbench.sr -P onfi -A onfi --protocol-decoder-samplenum || true
 	echo gtkwave testbench.vcd
 
@@ -16,22 +16,22 @@ yosys:
 	yosys -p 'synth_ice40 -top nand_master -blif test.blif' nand_master.sv  || true
 
 verilator:
-	verilator -sc testbench.sv  --coverage
+	verilator -sc testbench.sv --coverage --no-timing
 
 iverilogs:
 	iverilog -o testbenchs34 testbenchs34.sv -Wall -g2005-sv -s testbench k9f1208.sv
 	vvp testbenchs34
-	sigrok-cli -i testbenchs34.vcd -C nand_nwp,nand_nwe,nand_nre,nand_nce,nand_cle,nand_ale -o testbenchs34.sr
+	sigrok-cli -I vcd -i testbenchs34.vcd -o testbenchs34.sr
 	sigrok-cli -i testbenchs34.sr -P onfi -A onfi --protocol-decoder-samplenum || true
 	echo gtkwave testbenchs34.vcd
 
 verilators:
-	verilator -sc testbenchs34.sv  --coverage
+	verilator -sc testbenchs34.sv --coverage --no-timing
 
 iveriloginout:
 	iverilog -o inout inout.sv -Wall -g2005-sv -s top
 	vvp inout
-	#sigrok-cli -i testbenchs34.vcd -C nand_nwp,nand_nwe,nand_nre,nand_nce,nand_cle,nand_ale,io0,io1,io2,io3,io4,io5,io6,io7 -o testbenchs34.sr
-	#sigrok-cli -i testbenchs34.sr -P onfi -A onfi --protocol-decoder-samplenum
+	sigrok-cli -I vcd -i inout.vcd -C data0,data1,data2,data3 -o inout.sr
+	sigrok-cli -i inout.sr -P onfi -A onfi --protocol-decoder-samplenum || true
 	echo gtkwave inout.vcd
 
