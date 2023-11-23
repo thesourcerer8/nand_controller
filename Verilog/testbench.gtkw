@@ -1,0 +1,25 @@
+[*]
+[*] GTKWave Analyzer v3.3.104 (w)1999-2020 BSI
+[*] Wed Aug  9 13:01:54 2023
+[*]
+[dumpfile] "testbench.vcd"
+[dumpfile_mtime] "Wed Aug  9 12:58:55 2023"
+[dumpfile_size] 11640
+[savefile] "testbench.gtkw"
+[timestart] 0
+[size] 1920 1043
+[pos] -1 -1
+*-16.234240 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] tb.
+[treeopen] tb.NM.
+[sst_width] 233
+[signals_width] 150
+[sst_expanded] 1
+[sst_vpaned_height] 298
+@22
+tb.nand_data[15:0]
+@2023
+^1 cmd-filter.txt
+tb.NM.cmd_in[5:0]
+[pattern_trace] 1
+[pattern_trace] 0
