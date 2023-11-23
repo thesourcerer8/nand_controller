@@ -18,7 +18,7 @@ iverilog:
 	vvp testbench
 	sigrok-cli -I vcd -i testbench.vcd -o testbench.sr
 	sigrok-cli -i testbench.sr -P onfi -A onfi --protocol-decoder-samplenum || true
-	echo gtkwave testbench.vcd
+	echo gtkwave testbench.gtkw
 
 yosys:
 	yosys -p 'synth_ice40 -top nand_master -blif test.blif' nand_master.sv  || true
@@ -31,7 +31,7 @@ iverilogs:
 	vvp testbenchs34
 	sigrok-cli -I vcd -i testbenchs34.vcd -o testbenchs34.sr || true
 	sigrok-cli -i testbenchs34.sr -P onfi -A onfi --protocol-decoder-samplenum || true
-	echo gtkwave testbenchs34.vcd
+	echo gtkwave testbenchs34.gtkw
 
 verilators:
 	verilator -sc testbenchs34.sv --coverage --no-timing
