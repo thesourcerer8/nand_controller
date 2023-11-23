@@ -209,7 +209,7 @@ always @(posedge clk) begin
 			(state == `M_NAND_READ_ID & substate == `MS_BEGIN) |			// initiate submission of READ ID command
 			(state == `MI_BYPASS_COMMAND & substate == `MS_SUBMIT_COMMAND) ) begin 	// direct command byte submission
 		cle_activate = 1'b1;
-		$display ("NAND_RESET initiated");
+		$display ("NM: NAND_RESET initiated");
 	end else begin
 		cle_activate = 1'b0;
 	end
@@ -223,7 +223,7 @@ always @(posedge clk) begin
 			(state == `MI_BYPASS_ADDRESS  &  substate == `MS_SUBMIT_ADDRESS) ) begin	// direct address byte submission
 
 		ale_activate = 1'b1;
-		$display("Address Latch unit activated");
+		$display("NM: Address Latch unit activated");
 	end else begin
 		ale_activate = 1'b0;
 	end
@@ -252,17 +252,17 @@ always @(posedge clk) begin
 	//MASTER: process(clk, nreset, activate, cmd_in, data_in, state_switch)
 
 		if(nreset == 1'b0) begin
-			//$display("NRESET SIGNAL RECEIVED, INITIATING RESET");
+			$display("NM: NRESET SIGNAL RECEIVED, INITIATING RESET");
 			state = `M_RESET;
 		end
 //		end else if(activate = '1') begin
 //			state	<= state_switch(to_integer(unsigned(cmd_in)));
 		else if(enable == 1'b0) begin
-			//$display("STATE MACHINE RUNNING");
+			//$display("NM: STATE MACHINE RUNNING");
 			case(state)
 				// RESET state. Speaks for itself
 				`M_RESET: begin
-					$display("RESET LOGIC EXECUTING");
+					$display("NM: RESET LOGIC EXECUTING");
 					state = `M_IDLE;
 					substate = `MS_BEGIN;
 					delay = 0;
@@ -289,6 +289,7 @@ always @(posedge clk) begin
 				end	
 				// Reset the NAND chip
 				`M_NAND_RESET: begin
+					$display("NM: M_NAND_RESET received");
 					cle_data_in = 16'h00ff;
 					state = `M_WAIT;
 					n_state	= `M_IDLE;
@@ -301,6 +302,7 @@ always @(posedge clk) begin
 				end	
 				// Set CE# to '0' (enable NAND chip)
 				`MI_CHIP_ENABLE: begin
+					$display("NM: MI_CHIP_ENABLE");
 					nand_nce = 1'b0;
 					state	 = `M_IDLE;
 					status[2]= 1'b1;
@@ -336,6 +338,7 @@ always @(posedge clk) begin
 				// the register is reset to 0 and bit 4 of the status register
 				// is set to 1'b1
 				`MI_GET_ID_BYTE: begin
+					$display("NM: MI_GET_ID_BYTE received");
 					if(page_idx < 5) begin
 						data_out = chip_id[page_idx];
 						page_idx = page_idx + 1;
@@ -351,6 +354,7 @@ always @(posedge clk) begin
 				// If the value goes beyond 255, then the register is reset and 
 				// bit 4 of the status register is set to 1'b1
 				`MI_GET_PARAM_PAGE_BYTE: begin
+					$display("NM: MI_GET_PARAM_PAGE_BYTE received");
 					if(page_idx < 256) begin
 						data_out = page_param[page_idx];
 						page_idx = page_idx + 1;
@@ -735,14 +739,19 @@ always @(posedge clk) begin
 				end	
 				// Wait for latch and IO modules to become ready as well as for NAND's R/B# to be 1'b1
 				`M_WAIT: begin
+					//$display("NM: M_WAIT state received %d", delay);
 					if(delay > 1) begin
 						delay		= delay - 1;
 					end else if(1'b0 == (cle_busy | ale_busy | io_rd_busy | io_wr_busy | (!nand_rnb))) begin
+						$display("NM: M_WAIT COUNTDOWN FINISHED. Pushing state");
 						state		= n_state;
+					end else begin
+						$display("NM: M_WAIT COUNTDOWN FINISHED, BUT WE ARE NOT MOVING FORWARD DUE TO SIGNALS");
 					end
 				end	
 				// Simple delay mechanism
 				`M_DELAY: begin
+					$display("NM: M_DELAY");
 					if(delay > 1) begin
 						delay 		= delay - 1;
 					end else begin
