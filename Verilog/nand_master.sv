@@ -625,17 +625,21 @@ always @(posedge clk) begin
 				end	
 				// Read NAND chip JEDEC ID
 				`M_NAND_READ_ID: begin
+					$display("NM: M_NAND_READ_ID received");
 					if(substate == `MS_BEGIN) begin
+						$display("NM: READ_ID SUBSTATE: MS_BEGIN");
 						cle_data_in		= 16'h0090;
 						substate		= `MS_SUBMIT_COMMAND;
 						state			= `M_WAIT;
 						n_state 		= `M_NAND_READ_ID;
 					end else if(substate == `MS_SUBMIT_COMMAND) begin
+						$display("NM: READ_ID SUBSTATE: SUBMIT_COMMAND");
 						ale_data_in		= 16'h0000;
 						substate		= `MS_SUBMIT_ADDRESS;
 						state 			= `M_WAIT;
 						n_state			= `M_NAND_READ_ID;
 					end else if(substate == `MS_SUBMIT_ADDRESS) begin
+						$display("NM: READ_ID SUBSTATE: SUBMIT_ADDRESS");
 						delay			= `t_wb;
 						state			= `M_DELAY;
 						n_state			= `M_NAND_READ_ID;
@@ -643,11 +647,13 @@ always @(posedge clk) begin
 						byte_count		= 5;
 						page_idx		= 0;
 					end else if(substate == `MS_READ_DATA0) begin
+						$display("NM: READ_ID SUBSTATE: READ_DATA0");
 						byte_count		= byte_count - 1;
 						state			= `M_WAIT;
 						n_state			= `M_NAND_READ_ID;
 						substate		= `MS_READ_DATA1;
 					end else if(substate == `MS_READ_DATA1) begin
+						$display("NM: READ_ID SUBSTATE: READ_DATA1");
 						chip_id[page_idx]	= io_rd_data_out[7:0];
 						if(0 < byte_count) begin
 							page_idx	= page_idx + 1;
@@ -656,6 +662,7 @@ always @(posedge clk) begin
 							substate	= `MS_END;
 						end
 					end else if(substate == `MS_END) begin
+						$display("NM: READ_ID SUBSTATE: MS_END");
 						byte_count		= 0;
 						page_idx		= 0;
 						substate		= `MS_BEGIN;
@@ -665,6 +672,7 @@ always @(posedge clk) begin
 				// *data_in is assigned one clock cycle after *_activate is triggered!!!!
 				// According to ONFI's timing diagrams this should be normal, but who knows...
 				`M_NAND_READ_PARAM_PAGE: begin
+					$display("NM: M_NAND_READ_PARAM_PAGE received");
 					if(substate == `MS_BEGIN) begin
 						cle_data_in		= 16'h00ec;
 						substate		= `MS_SUBMIT_COMMAND;
