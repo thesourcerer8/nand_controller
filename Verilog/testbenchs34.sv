@@ -184,11 +184,11 @@ begin
 	wait(~busy);
 	#2.5ns
 	
-	$display ("T=%0t Busy: %h", $realtime, busy);
+	$display ("T=%0t TB: Busy: %h", $realtime, busy);
 
 	// Read JEDEC ID
 	#2.5ns
-	$display ("T=%0t Read JEDEC ID (0x06)", $realtime);
+	$display ("T=%0t TB: Read JEDEC ID (0x06)", $realtime);
 	data_in = 8'h00;
 	cmd_in = `M_NAND_READ_ID;
 	#5ns
@@ -196,10 +196,10 @@ begin
 	#2.5ns
 	activate = 1'b0;
 
-	$display ("T=%0t Busy: %h", $realtime, busy);
+	$display ("T=%0t TB: Busy: %h", $realtime, busy);
 
 	// Provide ID
-	$display ("T=%0t Provide ID", $realtime);
+	$display ("T=%0t TB: Provide ID", $realtime);
 	#155ns
 	//nand_data_drive = 16'h002c;
 	#32.5ns
@@ -215,59 +215,59 @@ begin
 	#5ns
 
 	
-	$display ("T=%0t Busy: %h", $realtime, busy);
+	$display ("T=%0t TB: Busy: %h", $realtime, busy);
 
 	// Read the bytes of the ID
-	$display ("T=%0t Read the bytes of the ID (0x13)", $realtime);
+	$display ("T=%0t TB: Read the bytes of the ID (0x13)", $realtime);
 	cmd_in = `MI_GET_ID_BYTE;
 	// 1
 	activate = 1'b1;
 	#2.5ns
 	activate = 1'b0;
 	#2.5ns
-	$display ("T=%0t ID0: %h", $realtime, data_out);
+	$display ("T=%0t TB: ID0: %h", $realtime, data_out);
 	// 2
 	activate = 1'b1;
 	#2.5ns
 	activate = 1'b0;
 	#2.5ns
-	$display ("T=%0t ID1: %h", $realtime, data_out);
+	$display ("T=%0t TB: ID1: %h", $realtime, data_out);
 	// 3
 	activate = 1'b1;
 	#2.5ns
 	activate = 1'b0;
 	#2.5ns
-	$display ("T=%0t ID2: %h", $realtime, data_out);
+	$display ("T=%0t TB: ID2: %h", $realtime, data_out);
 	// 4
 	activate = 1'b1;
 	#2.5ns
 	activate = 1'b0;
 	#2.5ns
-	$display ("T=%0t ID3: %h", $realtime, data_out);
+	$display ("T=%0t TB: ID3: %h", $realtime, data_out);
 	// 5
 	activate = 1'b1;
 	#2.5ns
 	activate = 1'b0;
 	#2.5ns
-	$display ("T=%0t ID4: %h", $realtime, data_out);
+	$display ("T=%0t TB: ID4: %h", $realtime, data_out);
 	// 5
 	activate = 1'b1;
 	#2.5ns
 	activate = 1'b0;
 	#2.5ns
-	$display ("T=%0t ID4: %h", $realtime, data_out);
+	$display ("T=%0t TB: ID5: %h", $realtime, data_out);
 	// 5
 	activate = 1'b1;
 	#2.5ns
 	activate = 1'b0;
 	#2.5ns
-	$display ("T=%0t ID4: %h", $realtime, data_out);
+	$display ("T=%0t TB: ID6: %h", $realtime, data_out);
 	// 5
 	activate = 1'b1;
 	#2.5ns
 	activate = 1'b0;
 	#2.5ns
-	$display ("T=%0t ID4: %h", $realtime, data_out);
+	$display ("T=%0t TB: ID7: %h", $realtime, data_out);
 
 
 
