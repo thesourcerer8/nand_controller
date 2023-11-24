@@ -149,7 +149,7 @@ begin
 
         // Should we do a RESET or does the controller do it itself?
 	
-	$display ("TB:%0t Busy: %h", $realtime, busy);
+	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
 
 	// RESET the flash controller
 	$display ("TB:%0t Reset the controller (0x01)", $realtime);
@@ -160,8 +160,9 @@ begin
 	activate = 1'b0;
 
 	#100
+	wait(~busy);
 	
-	$display ("TB:%0t Busy: %h", $realtime, busy);
+	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
 
 	// Enable the chip
 	$display ("TB:%0t Enable the chip (0x0E)", $realtime);
@@ -172,7 +173,7 @@ begin
 	#2.5ns
 	activate = 1'b0;
 
-	$display ("TB:%0t Busy: %h", $realtime, busy);
+	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
 
 	// We need a NAND RESET 
 	$display ("TB:%0t NAND RESET (0x04)", $realtime);
@@ -185,7 +186,7 @@ begin
 	wait(~busy);
 	#2.5ns
 	
-	$display ("TB:%0t TB: Busy: %h", $realtime, busy);
+	$display ("TB:%0t TB: Busy: %h should be 0", $realtime, busy);
 
 	// Read JEDEC ID
 	#2.5ns
@@ -203,7 +204,7 @@ begin
 
 	wait(~busy);
 	
-	$display ("TB:%0t TB: Busy: %h", $realtime, busy);
+	$display ("TB:%0t TB: Busy: %h should be 0", $realtime, busy);
 
 	// Read the bytes of the ID
 	$display ("TB:%0t TB: Read the bytes of the ID (0x13)", $realtime);
@@ -261,8 +262,8 @@ begin
 
 
 	#10ns
-
-	$display ("TB:%0t Busy: %h", $realtime, busy);
+        wait(~busy);
+	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
 
 	// GET STATUS
 	$display ("TB:%0t Get Status (0x0D)", $realtime);
@@ -274,7 +275,8 @@ begin
 	#2.5ns	
 	$display ("TB: Status: %h", data_out);
 
-	$display ("TB:%0t Busy: %h", $realtime, busy);
+	wait(~busy);
+	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
 
 	// Perhaps the READ PAGE needs a Reset Buffer Index so that it writes
 	// it at the right place
@@ -286,8 +288,8 @@ begin
 	activate = 1'b0;
 	#2.5ns	
 
-
-	$display ("TB:%0t Busy: %h", $realtime, busy);
+        wait(~busy);
+	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
 
 	// READ PAGE
 	$display ("TB:%0t NAND READ Page into internal buffer (0x09)", $realtime);
@@ -299,7 +301,8 @@ begin
 	#2.5ns
         #10ns
 
-	$display ("TB:%0t Busy: %h", $realtime, busy);
+	wait(~busy);
+	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
 
 	// Resetting the Buffer index again to make sure we read it from the
 	// start
@@ -311,7 +314,8 @@ begin
 	activate = 1'b0;
 	#2.5ns	
 
-	$display ("TB:%0t Busy: %h", $realtime, busy);
+	wait(~busy);
+	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
 
 
 	// Now we can read each byte
@@ -324,6 +328,7 @@ begin
 	#2.5ns
 	$display ("TB:Data Page Byte: %h", data_out);
 
+	wait(~busy);
         #5ns
 	$display ("TB:%0t End of simulation", $realtime);
 	$finish;
