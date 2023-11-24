@@ -709,7 +709,7 @@ specify
         //////////////////////////////////////////////////////////////////
         //ID array data / K9F1208 DEVICE SPECIFIC
         //////////////////////////////////////////////////////////////////
-	$display("FLASH: Initializing the IDArray");
+	$display("T:%0t FLASH: Initializing the IDArray",$realtime);
         IDArray[4'd0] = 8'hEC;
         if(Model_q)
             IDArray[4'd1] = 8'h36;
@@ -725,9 +725,9 @@ specify
     integer m_mem[0:(PageSize-SpareSize)*PageNum+PageSize-SpareSize-1];
 
 `ifdef SKIPMEMINIT
-        $display("FLASH: Skipping on demand of SKIPMEMINIT flag");
+        $display("T:%0t FLASH: Skipping on demand of SKIPMEMINIT flag",$realtime);
 `else
-        $display("FLASH: INIT MEMORY");
+        $display("T:%0t FLASH: INIT MEMORY",$realtime);
         for (i=0;i<= PageNum;i=i+1)
         begin
             for (j=0;j<= PageSize-SpareSize-1;j=j+1)
@@ -798,7 +798,7 @@ specify
 
     initial
     begin
-	$display("FLASH: INITIAL BLOCK");
+	$display("T:%0t FLASH: INITIAL BLOCK",$realtime);
         TRANSFER        =1'b0;
         INTCE           =1'b0;
         ERS_ACT         =1'b0;
@@ -849,9 +849,9 @@ specify
     initial
     begin
         PoweredUp = 1'b0;
-	$display("FLASH: WAITING FOR POWERUP");
+	$display("T:%0t FLASH: WAITING FOR POWERUP",$realtime);
         #poweredupT  PoweredUp = 1'b1;
-	$display("FLASH: POWERUP DONE");
+	$display("T:%0t FLASH: POWERUP DONE",$realtime);
     end
 
     //Program Operation
@@ -877,9 +877,9 @@ specify
     // Dummy busy time
     always @(posedge DBSY_in)
     begin : DummyBusyTime
-	$display("FLASH: DummyBusyTime started");
+	$display("T:%0t FLASH: DummyBusyTime started",$realtime);
         #(tdevice_DBSY+WER_01) DBSY_out = 1'b1;
-	$display("FLASH: DummyBusyTime finished");
+	$display("T:%0t FLASH: DummyBusyTime finished",$realtime);
     end
     always @(negedge DBSY_in)
     begin
@@ -914,16 +914,16 @@ specify
     ////////////////////////////////////////////////////////////////////////////
     always @(next_state, PoweredUp)
     begin
-	$display("FLASH: always next_state, poweredup");
+	$display("T:%0t FLASH: always next_state, poweredup",$realtime);
         if (PoweredUp)
         begin
-            $display("FLASH: Moving to next state because PoweredUp");
+            $display("T:%0t FLASH: Moving to next state because PoweredUp",$realtime);
             current_state = next_state;
             reseted       = 1'b1;
         end
         else
         begin
-	    $display("FLASH: WARNING: NOT POWERED UP THEREFORE STAYING IN IDLE!!!");
+	    $display("T:%0t FLASH: WARNING: NOT POWERED UP THEREFORE STAYING IN IDLE!!!",$realtime);
             current_state = IDLE;
             RD_MODE       = READ_A;
             STATUS_MODE   = NONE;
@@ -1013,14 +1013,14 @@ specify
     event rstdone_event;
     always @ (posedge reseted)
     begin
-	$display("FLASH: posedge reseted received");
+	$display("T:%0t FLASH: posedge reseted received",$realtime);
         disable rstdone_process;
         RSTDONE = 1'b1;  // reset done
     end
 
     always @ (posedge RSTSTART)
     begin
-	$display("FLASH: posedge RSTSTART received - reseted:%d RSTDONE:%d",reseted,RSTDONE);
+	$display("T:%0t FLASH: posedge RSTSTART received - reseted:%d RSTDONE:%d",$realtime,reseted,RSTDONE);
         if (reseted &&  RSTDONE)
         begin
             if (ERS_ACT)
@@ -1036,7 +1036,7 @@ specify
 
     always @(rstdone_event)
     begin:rstdone_process
-	$display("FLASH: rstdone_event");
+	$display("T:%0t FLASH: rstdone_event",$realtime);
         #duration RSTDONE = 1'b1;
     end
 
@@ -1049,14 +1049,14 @@ specify
     always @(negedge write or negedge reseted)
     begin
         if (reseted != 1'b1 ) begin
-	    $display("FLASH: negedge reseted -> Moving state forward %h -> %h",current_state,next_state);
+	    $display("T:%0t FLASH: negedge reseted -> Moving state forward %h -> %h",$realtime,current_state,next_state);
             next_state = current_state;
         end else
-	    $display("FLASH: write FSM %h",current_state);
+	    $display("T:%0t FLASH: write FSM %h",$realtime,current_state);
             case (current_state)
             IDLE :
             begin
-		$display("FLASH: current state IDLE, choosing next:");
+		$display("T:%0t FLASH: current state IDLE, choosing next:",$realtime);
                 if (CLE  && Data==8'h00 && ~ CPY_ACT  )
                     next_state = IDLE; // READ AREA A
                 else if ( CLE  && Data==8'h01 && ~ CPY_ACT  )
@@ -1077,12 +1077,12 @@ specify
                     next_state = RESET; // reset
                 else if ( ALE  && STATUS_MODE == NONE)
                     next_state = A0_RD;
-	        $display("FLASH: Command gave next_state: %h",next_state);
+	        $display("T:%0t FLASH: Command gave next_state: %h",$realtime,next_state);
             end
 
             A0_RD :
             begin
-		$display("FLASH: state A0_RD");
+		$display("T:%0t FLASH: state A0_RD",$realtime);
                 if ( ALE )
                     next_state = A1_RD;
                 else if ( CLE  && Data==8'hFF  )
@@ -1091,7 +1091,7 @@ specify
 
             A1_RD :
             begin
-		$display("FLASH: state A1_RD");
+		$display("T:%0t FLASH: state A1_RD",$realtime);
                 if ( ALE )
                     next_state = A2_RD;
                 else if ( CLE  && Data==8'hFF  )
@@ -1100,7 +1100,7 @@ specify
 
             A2_RD :
             begin
-		$display("FLASH: state A2_RD");
+		$display("T:%0t FLASH: state A2_RD",$realtime);
                 if ( ALE )
                     next_state = BUFF_TR;
                 else if ( CLE  && Data==8'hFF  )
@@ -1109,14 +1109,14 @@ specify
 
             BUFF_TR :
             begin
-		$display("FLASH: state BUFF_TR");
+		$display("T:%0t FLASH: state BUFF_TR",$realtime);
                 if ( CLE  && Data==8'hFF )
                     next_state = RESET; // reset
             end
 
             RD :
             begin
-		$display("FLASH: state RD");
+		$display("T:%0t FLASH: state RD",$realtime);
                 if ( CLE  && Data==8'h00 && ~ CPY_ACT )
                     next_state = IDLE; // READ AREA A
                 else if ( CLE  && Data==8'h01 && ~ CPY_ACT )
@@ -1141,22 +1141,22 @@ specify
                     next_state = PREL_CPY;
                 else if ( ALE  )
                     next_state = A0_RD;
-	        $display("FLASH: next state chosen: %h",next_state);
+	        $display("T:%0t FLASH: next state chosen: %h",$realtime,next_state);
             end
 
             ID_PREL :
             begin
-		$display("FLASH: state ID_PREL");
+		$display("T:%0t FLASH: state ID_PREL",$realtime);
                 if ( ALE  && AddrCom==8'h00  )
                     next_state = ID;
                 else if ( CLE  && Data==8'hFF  )
                     next_state = RESET; // reset
-	        $display("FLASH: next state chosen: %h",next_state);
+	        $display("T:%0t FLASH: next state chosen: %h",$realtime,next_state);
             end
 
             ID :
             begin
-		$display("FLASH: state ID");
+		$display("T:%0t FLASH: state ID",$realtime);
                 if ( CLE  && Data==8'h00  )
                     next_state = IDLE; // READ AREA A
                 else if ( CLE  && Data==8'h01  )
@@ -1175,12 +1175,12 @@ specify
                     next_state = PREL_ERS;
                 else if ( CLE  && Data==8'hFF  )
                     next_state = RESET; // reset
-	        $display("FLASH: next state chosen: %h",next_state);
+	        $display("T:%0t FLASH: next state chosen: %h",$realtime,next_state);
             end
 
             PREL_PRG :
             begin
-		$display("FLASH: state PREL_PRG");
+		$display("T:%0t FLASH: state PREL_PRG",$realtime);
                 if ( ALE  )
                     next_state = A0_PRG;
                 else if ( CLE  && Data==8'hFF  )
@@ -1189,7 +1189,7 @@ specify
 
             A0_PRG :
             begin
-		$display("FLASH: state A0_PRG");
+		$display("T:%0t FLASH: state A0_PRG",$realtime);
                 if ( ALE  )
                     next_state = A1_PRG;
                 else if ( CLE  && Data==8'hFF  )
@@ -1198,7 +1198,7 @@ specify
 
             A1_PRG :
             begin
-		$display("FLASH: state A1_PRG");
+		$display("T:%0t FLASH: state A1_PRG",$realtime);
                 if ( ALE  )
                     next_state = A2_PRG;
                 else if ( CLE  && Data==8'hFF  )
@@ -1207,7 +1207,7 @@ specify
 
             A2_PRG :
             begin
-		$display("FLASH: state A2_PRG");
+		$display("T:%0t FLASH: state A2_PRG",$realtime);
                 if ( ALE  )
                     next_state = DATA_PRG;
                 else if ( CLE  && Data==8'hFF  )
@@ -1216,7 +1216,7 @@ specify
 
             DATA_PRG :
             begin
-		$display("FLASH: state DATA_PRG");
+		$display("T:%0t FLASH: state DATA_PRG",$realtime);
                 if (CLE &&(Data==8'h10 )
                         && WrAddr==WrBuffStartAddr[WrCnt])
                     next_state = IDLE;
@@ -1231,12 +1231,12 @@ specify
                     next_state = RESET; // reset
                 else if ( ~ALE && ~CLE && WrAddr < PageSize+1 )
                     next_state = DATA_PRG; // write next word to buffer
-	        $display("FLASH: next state chosen: %h",next_state);
+	        $display("T:%0t FLASH: next state chosen: %h",$realtime,next_state);
             end
 
             PGMS :
             begin
-		$display("FLASH: state PGMS");
+		$display("T:%0t FLASH: state PGMS",$realtime);
                 if ( CLE  && Data==8'hFF  )
                     next_state = RESET; // reset
                 else if ( CLE  && Data==8'h70  )
@@ -1247,7 +1247,7 @@ specify
 
             DBSY :
             begin
-		$display("FLASH: state DBSY");
+		$display("T:%0t FLASH: state DBSY",$realtime);
                 if ( CLE  && Data==8'h70  )
                     next_state = DBSY; // read status
                 else if ( CLE  && Data==8'h71  )
@@ -1258,7 +1258,7 @@ specify
 
             RDY_PRG :
             begin
-		$display("FLASH: state RDY_PRG");
+		$display("T:%0t FLASH: state RDY_PRG",$realtime);
                 if ( CLE  && Data==8'h80  )
                     next_state = PREL_PRG;
                 else if ( CLE  && Data==8'h70  )
@@ -1271,7 +1271,7 @@ specify
 
             PREL_ERS :
             begin
-		$display("FLASH: state PREL_ERS");
+		$display("T:%0t FLASH: state PREL_ERS",$realtime);
                 if ( ALE  )
                     next_state = A1_ERS;
                 else if ( CLE  && Data==8'hFF  )
@@ -1280,7 +1280,7 @@ specify
 
             A1_ERS :
             begin
-		$display("FLASH: state A1_ERS");
+		$display("T:%0t FLASH: state A1_ERS",$realtime);
                 if ( ALE  )
                     next_state = A2_ERS;
                 else if ( CLE  && Data==8'hFF  )
@@ -1289,7 +1289,7 @@ specify
 
             A2_ERS :
             begin
-		$display("FLASH: state A2_ERS");
+		$display("T:%0t FLASH: state A2_ERS",$realtime);
                 if ( ALE  )
                     next_state = A3_ERS;
                 else if ( CLE  && Data==8'hFF  )
@@ -1298,7 +1298,7 @@ specify
 
             A3_ERS :
             begin
-		$display("FLASH: state A3_ERS");
+		$display("T:%0t FLASH: state A3_ERS",$realtime);
                 if ( CLE  && Data==8'h60  && ErsCnt < 3 )
                     next_state = PREL_ERS;
                 else if ( CLE  && Data==8'hD0  )
@@ -1309,7 +1309,7 @@ specify
 
             BERS_EXEC :
             begin
-                $display("FLASH: state BERS_ERS");
+                $display("T:%0t FLASH: state BERS_ERS",$realtime);
                 if ( CLE  && Data==8'hFF  )
                     next_state = RESET; // reset
                 else if ( CLE  && Data==8'h70  )
@@ -1320,7 +1320,7 @@ specify
 
             PREL_CPY :
             begin
-                $display("FLASH: state PREL_CPY");
+                $display("T:%0t FLASH: state PREL_CPY",$realtime);
                 if ( ALE  )
                     next_state = A0_CPY;
                 else if ( CLE  && Data==8'hFF  )
@@ -1329,7 +1329,7 @@ specify
 
             A0_CPY :
             begin
-		$display("FLASH: state A0_CPY");
+		$display("T:%0t FLASH: state A0_CPY",$realtime);
                 if ( ALE  )
                     next_state = A1_CPY;
                 else if ( CLE  && Data==8'hFF  )
@@ -1338,7 +1338,7 @@ specify
 
             A1_CPY :
             begin
-		$display("FLASH: state A1_CPY");
+		$display("T:%0t FLASH: state A1_CPY",$realtime);
                 if ( ALE  )
                     next_state = A2_CPY;
                 else if ( CLE  && Data==8'hFF  )
@@ -1347,7 +1347,7 @@ specify
 
             A2_CPY :
             begin
-		$display("FLASH: state A2_CPY");
+		$display("T:%0t FLASH: state A2_CPY",$realtime);
                 if ( ALE  )
                     next_state = CPY_PRG;
                 else if ( CLE  && Data==8'hFF  )
@@ -1356,7 +1356,7 @@ specify
 
             CPY_PRG :
             begin
-		$display("FLASH: state CPY_PRG");
+		$display("T:%0t FLASH: state CPY_PRG",$realtime);
                 if( CLE && Data==8'h10)
                     next_state = PGMS;
                 else if( CLE && Data==8'h11 && CpyCntD==CpyCntS-1 )
@@ -1369,7 +1369,7 @@ specify
 
             CPY_BSY :
             begin
-		$display("FLASH: state CPY_BSY");
+		$display("T:%0t FLASH: state CPY_BSY",$realtime);
                 if ( CLE  && Data==8'h70  )
                     next_state = CPY_BSY; // read status
                 else if ( CLE  && Data==8'h71  )
@@ -1380,7 +1380,7 @@ specify
 
             RDY_CPY :
             begin
-		$display("FLASH: state RDY_CPY");
+		$display("T:%0t FLASH: state RDY_CPY",$realtime);
                 if ( CLE  && Data==8'h8A  )
                     next_state = PREL_CPY;
                 else if ( CLE  && Data==8'h70  )
@@ -1398,7 +1398,7 @@ specify
     // RESET state, RSTDONE
     always @(posedge RSTDONE)
     begin: StateGen1
-	$display("FLASH: posedge RSTDONE");
+	$display("T:%0t FLASH: posedge RSTDONE",$realtime);
         if (current_state == RESET)
             next_state = IDLE;
     end
@@ -1406,7 +1406,7 @@ specify
     // BUFF_TR, TR_out
     always @(posedge TR_out)
     begin: StateGen2
-	$display("posedge TR_out");
+	$display("posedge TR_out",$realtime);
         if (current_state == BUFF_TR)
             next_state = RD; // buffer transfered
     end
@@ -1414,7 +1414,7 @@ specify
     // BUFF_TR, INTCE
     always @(posedge INTCE)
     begin: StateGen3
-	$display("posedge INTCE");
+	$display("posedge INTCE",$realtime);
         if (current_state == BUFF_TR && CENeg)
             next_state = IDLE; // read intercepted
     end
@@ -1422,7 +1422,7 @@ specify
     // RD, read negedge
     always @(negedge read)
     begin: StateGen4
-	$display("FLASH: negedge read");
+	$display("T:%0t FLASH: negedge read",$realtime);
         if (reseted!=1'b1)
             next_state = current_state;
         else
@@ -1438,7 +1438,7 @@ specify
     // PGMS, PROG_out
     always @(posedge PROG_out)
     begin: StateGen5
-	$display("FLASH: posedge PROG_out");
+	$display("T:%0t FLASH: posedge PROG_out",$realtime);
         if (current_state == PGMS )
         begin
             next_state = IDLE; // programming done
@@ -1448,7 +1448,7 @@ specify
     // DBSY, DBSY_out
     always @(posedge DBSY_out)
     begin: StateGen6
-	$display("FLASH: posedge DBSY_out");
+	$display("T:%0t FLASH: posedge DBSY_out",$realtime);
         if (current_state == DBSY )
             next_state = RDY_PRG;
         else if (current_state == CPY_BSY )
@@ -1458,7 +1458,7 @@ specify
     // BERS_EXEC, BERS_out
     always @(posedge BERS_out)
     begin: StateGen7
-	$display("FLASH: posege BERS_out");
+	$display("T:%0t FLASH: posege BERS_out",$realtime);
         if (current_state == BERS_EXEC )
             next_state = IDLE;
     end
@@ -1480,7 +1480,7 @@ specify
 
     always @( posedge oe)
     begin: Output
-	$display("FLASH: posedge oe");
+	$display("T:%0t FLASH: posedge oe",$realtime);
         case (current_state)
             IDLE :
             begin
@@ -1490,13 +1490,13 @@ specify
 
             RD :
             begin
-		$display("FLASH: RD cmd");
+		$display("T:%0t FLASH: RD cmd",$realtime);
                 READ_DATA(Address,PageAddr);
             end
 
             ID :
             begin
-		$display("FLASH: ID cmd");
+		$display("T:%0t FLASH: ID cmd",$realtime);
                 if ( IDAddr < 4 )
                 begin
                     DOut_zd = IDArray[IDAddr];
@@ -1508,14 +1508,14 @@ specify
 
             PGMS :
             begin
-		$display("FLASH: PGMS");
+		$display("T:%0t FLASH: PGMS",$realtime);
                 if ( STATUS_MODE !== NONE )
                     READ_STATUS(STATUS_MODE);
             end
 
             DBSY :
             begin
-		$display("FLASH: DBSY");
+		$display("T:%0t FLASH: DBSY",$realtime);
                 if ( STATUS_MODE !== NONE )
                     READ_STATUS(STATUS_MODE);
             end
@@ -1548,7 +1548,7 @@ specify
 
     always @(negedge write)
     begin: Func0
-	$display("FLASH: negedge write");
+	$display("T:%0t FLASH: negedge write",$realtime);
         if ( reseted === 1'b1 )
         case (current_state)
         IDLE :
@@ -2423,7 +2423,7 @@ specify
     //RESET state, RSTDONE
     always @(posedge RSTDONE)
     begin: Func1
-	$display("FLASH: posedge RSTDONE # RESET state, RSTDONE");
+	$display("T:%0t FLASH: posedge RSTDONE # RESET state, RSTDONE",$realtime);
         if (current_state == RESET )
         begin
             if ( RD_MODE == READ_B )
