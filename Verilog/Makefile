@@ -29,7 +29,7 @@ verilator:
 iverilogs:
 	iverilog -o testbenchs34 testbenchs34.sv -Wall -g2005-sv -s testbench k9f1208.sv
 	vvp testbenchs34 >testbenchs34.log
-	sigrok-cli -I vcd -i testbenchs34.vcd -o testbenchs34.sr || true
+	sigrok-cli -I vcd -i testbenchs34.vcd -o testbenchs34.sr >/dev/null || true
 	sigrok-cli -i testbenchs34.sr -P onfi -A onfi --protocol-decoder-samplenum || true
 	echo gtkwave testbenchs34.gtkw
 
@@ -39,7 +39,7 @@ verilators:
 iveriloginout:
 	iverilog -o inout inout.sv -Wall -g2005-sv -s top
 	vvp inout
-	sigrok-cli -I vcd -i inout.vcd -C data0,data1,data2,data3 -o inout.sr
+	sigrok-cli -I vcd -i inout.vcd -C data0,data1,data2,data3 -o inout.sr >/dev/null
 	sigrok-cli -i inout.sr -P onfi -A onfi --protocol-decoder-samplenum || true
 	echo gtkwave inout.vcd
 
