@@ -1020,7 +1020,7 @@ specify
 
     always @ (posedge RSTSTART)
     begin
-	$display("FLASH: posedge RSTSTART received");
+	$display("FLASH: posedge RSTSTART received - reseted:%d RSTDONE:%d",reseted,RSTDONE);
         if (reseted &&  RSTDONE)
         begin
             if (ERS_ACT)
@@ -1036,6 +1036,7 @@ specify
 
     always @(rstdone_event)
     begin:rstdone_process
+	$display("FLASH: rstdone_event");
         #duration RSTDONE = 1'b1;
     end
 
@@ -1055,7 +1056,7 @@ specify
             case (current_state)
             IDLE :
             begin
-		$display("FLASH: state IDLE");
+		$display("FLASH: current state IDLE, choosing next:");
                 if (CLE  && Data==8'h00 && ~ CPY_ACT  )
                     next_state = IDLE; // READ AREA A
                 else if ( CLE  && Data==8'h01 && ~ CPY_ACT  )
@@ -1076,6 +1077,7 @@ specify
                     next_state = RESET; // reset
                 else if ( ALE  && STATUS_MODE == NONE)
                     next_state = A0_RD;
+	        $display("FLASH: Command gave next_state: %h",next_state);
             end
 
             A0_RD :
@@ -1139,6 +1141,7 @@ specify
                     next_state = PREL_CPY;
                 else if ( ALE  )
                     next_state = A0_RD;
+	        $display("FLASH: next state chosen: %h",next_state);
             end
 
             ID_PREL :
@@ -1148,6 +1151,7 @@ specify
                     next_state = ID;
                 else if ( CLE  && Data==8'hFF  )
                     next_state = RESET; // reset
+	        $display("FLASH: next state chosen: %h",next_state);
             end
 
             ID :
@@ -1171,6 +1175,7 @@ specify
                     next_state = PREL_ERS;
                 else if ( CLE  && Data==8'hFF  )
                     next_state = RESET; // reset
+	        $display("FLASH: next state chosen: %h",next_state);
             end
 
             PREL_PRG :
@@ -1226,6 +1231,7 @@ specify
                     next_state = RESET; // reset
                 else if ( ~ALE && ~CLE && WrAddr < PageSize+1 )
                     next_state = DATA_PRG; // write next word to buffer
+	        $display("FLASH: next state chosen: %h",next_state);
             end
 
             PGMS :
