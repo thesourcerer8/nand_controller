@@ -121,7 +121,8 @@ end
 
 always
 begin
-	#13400ns;
+	#134000ns;
+	$display("TB: WARNING: INTERRUPTING SIMULATION DUE TO TIMEOUT!");
 	$finish;
 end
 
@@ -185,7 +186,9 @@ begin
 	#2.5ns
 	wait(~busy);
 	#2.5ns
-	
+
+	#5us
+
 	$display ("TB:%0t TB: Busy: %h should be 0", $realtime, busy);
 
 	// Read JEDEC ID
@@ -203,7 +206,6 @@ begin
 
 
 	wait(~busy);
-	
 	$display ("TB:%0t TB: Busy: %h should be 0", $realtime, busy);
 
 	// Read the bytes of the ID
