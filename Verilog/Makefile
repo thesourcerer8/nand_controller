@@ -42,4 +42,5 @@ iveriloginout:
 	sigrok-cli -I vcd -i inout.vcd -C data0,data1,data2,data3 -o inout.sr >/dev/null
 	sigrok-cli -i inout.sr -P onfi -A onfi --protocol-decoder-samplenum || true
 	echo gtkwave inout.vcd
+	echo https://app.surfer-project.org/?load_url=https://app.surfer-project.org/picorv32.vcd&startup_commands=show_quick_start;module_add%20testbench.top;toggle_menu
 
