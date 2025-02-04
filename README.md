@@ -16,3 +16,6 @@ Tools used for Verification:
 * https://www.veripool.org/verilator/
 * https://surfer-project.org/
 * https://github.com/YosysHQ/yosys
+
+Installation of required tools:
+```sudo apt-get install iverilog sigrok gtkwave verilator yosys```
