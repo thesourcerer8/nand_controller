@@ -18,6 +18,12 @@
 `include "nand_master.sv"
 `timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
 
+`define TOGGLE_ACTIVATE \
+#5ns \
+activate = 1'b1; \
+#10ns \
+activate = 1'b0; \
+#15ns
 
 
 module testbench ();
@@ -70,6 +76,24 @@ module testbench ();
 	reg activate;
 	reg [5:0]cmd_in;
 
+	pullup(nand_rnb);
+	pullup(nand_data[0]);
+	pullup(nand_data[1]);
+	pullup(nand_data[2]);
+	pullup(nand_data[3]);
+	pullup(nand_data[4]);
+	pullup(nand_data[5]);
+	pullup(nand_data[6]);
+	pullup(nand_data[7]);
+	pullup(nand_data[8]);
+	pullup(nand_data[9]);
+	pullup(nand_data[10]);
+	pullup(nand_data[11]);
+	pullup(nand_data[12]);
+	pullup(nand_data[13]);
+	pullup(nand_data[14]);
+	pullup(nand_data[15]);
+
 	nand_master NM (
 		.clk      (clk),
 		.nand_cle (nand_cle),
@@ -78,7 +102,7 @@ module testbench ();
 		.nand_nwp (nand_nwp),
 		.nand_nce (nand_nce),
 		.nand_nre (nand_nre),
-		.nand_rnb (~nand_rnb),
+		.nand_rnb (nand_rnb),
 		.nand_data(nand_data),
 		.nreset   (nreset),
 		.data_out (data_out),
@@ -109,19 +133,11 @@ module testbench ();
 
 
 
-always
-begin
-	$display("TB:%0t",$realtime); 
-	clk = 1'b1;
-	#1.25ns;
-	clk = 1'b0;
-	#1.25ns;
-end
-
+always #5 clk = ~clk;
 
 always
 begin
-	#134000ns;
+	#20000000;
 	$display("TB: WARNING: INTERRUPTING SIMULATION DUE TO TIMEOUT!");
 	$finish;
 end
@@ -137,14 +153,15 @@ begin
 	$display ("TB:%0t Busy: %h", $realtime, busy);
 
 	$display ("TB:%0t Start of simulation", $realtime);
+        #1
 	activate = 1'b0;
 	nreset = 1'b1;
 	//nand_data_drive = 16'hZZZZ;
 	#10
 	nreset = 1'b0;
-	#2
+	#10
 	nreset = 1'b1;
-	#2
+	#10
 
 	#10000 // wait(PoweredUp);
 
@@ -154,15 +171,13 @@ begin
 
 	// RESET the flash controller
 	$display ("TB:%0t Reset the controller (0x01)", $realtime);
-	#5
+	#10
 	cmd_in = `M_RESET;
-	activate = 1'b1;
-	#2
-	activate = 1'b0;
+	`TOGGLE_ACTIVATE;
 
-	#100
+	$display ("TB:%0t Before waiting for busy done",$realtime);
 	wait(~busy);
-	
+	$display ("TB:%0t After waiting for busy done",$realtime);
 	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
 
 	// Enable the chip
@@ -170,9 +185,7 @@ begin
 	#5ns
 	cmd_in = `MI_CHIP_ENABLE;
 	data_in = 8'h00; // Which CE line?
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
+	`TOGGLE_ACTIVATE;
 
 	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
 
@@ -180,31 +193,26 @@ begin
 	$display ("TB:%0t NAND RESET (0x04)", $realtime);
 	#5ns 
 	cmd_in = `M_NAND_RESET;
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`TOGGLE_ACTIVATE;
+	wait(busy);
 	wait(~busy);
-	#2.5ns
-
-	#5us
+	//$display ("TB:%0t TB: Starting to wait 5us...",$realtime);
+	//#5us
+	//$display ("TB:%0t tB: Done waiting 5us.",$realtime);
 
 	$display ("TB:%0t TB: Busy: %h should be 0", $realtime, busy);
 
 	// Read JEDEC ID
-	#2.5ns
+	#10
 	$display ("TB:%0t TB: Read JEDEC ID (0x06)", $realtime);
 	data_in = 8'h00;
 	cmd_in = `M_NAND_READ_ID;
 	#5ns
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
+	`TOGGLE_ACTIVATE;
 
 	#5ns
 	$display ("TB:%0t TB: Busy: %h should be 1", $realtime, busy);
-
-
+	wait(busy);
 	wait(~busy);
 	$display ("TB:%0t TB: Busy: %h should be 0", $realtime, busy);
 
@@ -212,83 +220,41 @@ begin
 	$display ("TB:%0t TB: Read the bytes of the ID (0x13)", $realtime);
 	cmd_in = `MI_GET_ID_BYTE;
 	// 1
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`TOGGLE_ACTIVATE;
+	wait(~busy);
 	$display ("TB:%0t TB: ID0: %h", $realtime, data_out);
 	// 2
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`TOGGLE_ACTIVATE;
+	wait(~busy);
 	$display ("TB:%0t TB: ID1: %h", $realtime, data_out);
 	// 3
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`TOGGLE_ACTIVATE;
+	wait(~busy);
 	$display ("TB:%0t TB: ID2: %h", $realtime, data_out);
 	// 4
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`TOGGLE_ACTIVATE;
+	wait(~busy);
 	$display ("TB:%0t TB: ID3: %h", $realtime, data_out);
 	// 5
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
-	$display ("TB:%0t TB: ID4: %h", $realtime, data_out);
-	// 5
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`TOGGLE_ACTIVATE;
+	wait(~busy);
 	$display ("TB:%0t TB: ID5: %h", $realtime, data_out);
-	// 5
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
-	$display ("TB:%0t TB: ID6: %h", $realtime, data_out);
-	// 5
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
-	$display ("TB:%0t TB: ID7: %h", $realtime, data_out);
 
-
-
-
-	#10ns
-        wait(~busy);
-	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
 
 	// GET STATUS
 	$display ("TB:%0t Get Status (0x0D)", $realtime);
 	cmd_in = `MI_GET_STATUS;
-	#2.5ns
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns	
-	$display ("TB: Status: %h", data_out);
-
+	`TOGGLE_ACTIVATE;
 	wait(~busy);
-	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
+	$display ("TB: Status: %h", data_out);
 
 	// Perhaps the READ PAGE needs a Reset Buffer Index so that it writes
 	// it at the right place
 	$display ("TB:%0t Reset Buffer Index (0x12)", $realtime);
 	cmd_in = `MI_RESET_INDEX;
-	#2.5ns
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns	
+	#10
+	`TOGGLE_ACTIVATE;
+	#10
 
         wait(~busy);
 	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
@@ -296,11 +262,9 @@ begin
 	// READ PAGE
 	$display ("TB:%0t NAND READ Page into internal buffer (0x09)", $realtime);
 	cmd_in = `M_NAND_READ;
-	#2.5ns
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	#10
+	`TOGGLE_ACTIVATE;
+	#10
         #10ns
 
 	wait(~busy);
@@ -310,11 +274,9 @@ begin
 	// start
 	$display ("TB:%0t Reset Buffer Index (0x12)", $realtime);
 	cmd_in = `MI_RESET_INDEX;
-	#2.5ns
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns	
+	#10
+	`TOGGLE_ACTIVATE;
+	#10
 
 	wait(~busy);
 	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
@@ -323,16 +285,14 @@ begin
 	// Now we can read each byte
 	$display ("TB:%0t Read Data Page Byte (0x15)", $realtime);
 	cmd_in = `MI_GET_DATA_PAGE_BYTE;
-	#2.5ns
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	#10
+	`TOGGLE_ACTIVATE;
+	#10
 	$display ("TB:Data Page Byte: %h", data_out);
 
 	wait(~busy);
         #5ns
-	$display ("TB:%0t End of simulation", $realtime);
+	$display ("TB:%0t Successful End of simulation", $realtime);
 	$finish;
 end
 
