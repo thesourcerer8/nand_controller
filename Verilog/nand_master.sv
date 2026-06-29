@@ -40,7 +40,7 @@ module nand_master(clk,enable,nand_cle,nand_ale,nand_nwe,nand_nwp,nand_nce,nand_
 	reg [15:0] nand_data_reg;
 	wire [15:0] nand_data_recv;
 	assign nand_data = nand_data_reg;
-		
+
 	// Component interface
 	input nreset;
 	output reg [7:0] data_out;
@@ -165,36 +165,36 @@ always @(posedge clk) begin
 
 	// Busy indicator
 	if (state == `M_IDLE) begin
-		busy = 1'b0;
+		busy <= 1'b0;
 	end else begin
-		busy = 1'b1;
+		busy <= 1'b1;
 	end
 
 	// Bidirection NAND data interface.
 	//nand_data	<=	(cle_data_out or ale_data_out or io_wr_data_out) when (cle_busy or ale_busy or io_wr_busy) = '1' else 16'hZZZZ;
 	if (cle_busy == 1'b1) begin
-		nand_data_reg = cle_data_out;
+		nand_data_reg <= #1 cle_data_out;
 	end else if (ale_busy == 1'b1) begin
-		nand_data_reg = ale_data_out;
+		nand_data_reg <= #1 ale_data_out;
 	end else if (io_wr_busy == 1'b1) begin
-		nand_data_reg = io_wr_data_out;
+		nand_data_reg <= #1 io_wr_data_out;
 	end else begin
-		nand_data_reg = 16'hZZZZ;
+		nand_data_reg <= #1 16'hZZZZ;
 	end
 
-	io_rd_data_in = nand_data;
+	io_rd_data_in <= nand_data;
 	
 	// Command Latch Enable
-	nand_cle = cle_latch_ctrl;
+	nand_cle <= cle_latch_ctrl;
 	
 	// Address Latch Enable
-	nand_ale = ale_latch_ctrl;
+	nand_ale <= ale_latch_ctrl;
 	
 	// Write Enable
-	nand_nwe = cle_write_enable & ale_write_enable & io_wr_io_ctrl;
+	nand_nwe <= cle_write_enable & ale_write_enable & io_wr_io_ctrl;
 	
 	// Read Enable
-	nand_nre = io_rd_io_ctrl;
+	nand_nre <= io_rd_io_ctrl;
 	
 	// Activation of command latch unit
 	if ( state == `M_NAND_RESET |				// initiate submission of RESET command
@@ -203,48 +203,49 @@ always @(posedge clk) begin
 			(state == `M_NAND_BLOCK_ERASE & substate == `MS_SUBMIT_COMMAND1) |	// initiate submission of BLOCK ERASE 2 command
 			(state == `M_NAND_READ_STATUS & substate == `MS_BEGIN) |			// initiate submission of READ STATUS command
 			(state == `M_NAND_READ & substate == `MS_BEGIN) |				// initiate read mode for READ command
-			(state == `M_NAND_READ & substate == `MS_SUBMIT_COMMAND1) |		// initiate submission of READ command
+			(state == `M_NAND_READ & substate == `MS_SUBMIT_COMMAND1 & status[0] == 1'b1) |		// initiate submission of READ command (only for ONFI)
 			(state == `M_NAND_PAGE_PROGRAM & substate == `MS_BEGIN) |			// initiate write mode for PAGE PROGRAM command
 			(state == `M_NAND_PAGE_PROGRAM & substate == `MS_SUBMIT_COMMAND1) |	// initiate submission for PAGE PROGRAM command
 			(state == `M_NAND_READ_ID & substate == `MS_BEGIN) |			// initiate submission of READ ID command
 			(state == `MI_BYPASS_COMMAND & substate == `MS_SUBMIT_COMMAND) ) begin 	// direct command byte submission
-		cle_activate = 1'b1;
-		$display ("NM: NAND_RESET initiated");
+		cle_activate <= 1'b1;
 	end else begin
-		cle_activate = 1'b0;
+		cle_activate <= 1'b0;
 	end
-							
+
+    //$display("NM: STATE=%h SUBSTATE=%h DELAY=%d CLEAN_BUSY=%b", state, substate, delay, (cle_busy | ale_busy | io_rd_busy | io_wr_busy | (!nand_rnb)));
+
 	// Activation of address latch unit
 	if ( (state == `M_NAND_READ_PARAM_PAGE  &  substate == `MS_SUBMIT_COMMAND) |		// initiate address submission for READ PARAMETER PAGE command
 			(state == `M_NAND_BLOCK_ERASE  &  substate == `MS_SUBMIT_COMMAND) |	// initiate address submission for BLOCK ERASE command
 			(state == `M_NAND_READ  &  substate == `MS_SUBMIT_COMMAND) |		// initiate address submission for READ command
 			(state == `M_NAND_PAGE_PROGRAM  &  substate == `MS_SUBMIT_ADDRESS) |	// initiate address submission for PAGE PROGRAM command
-			(state == `M_NAND_READ_ID  &  substate == `MS_SUBMIT_COMMAND) |		// initiate address submission for READ ID command
+			(state == `M_NAND_READ_ID & substate == `MS_SUBMIT_ADDRESS) |		// initiate address submission for READ ID command
 			(state == `MI_BYPASS_ADDRESS  &  substate == `MS_SUBMIT_ADDRESS) ) begin	// direct address byte submission
 
-		ale_activate = 1'b1;
+		ale_activate <= 1'b1;
 		$display("NM: Address Latch unit activated");
 	end else begin
-		ale_activate = 1'b0;
+		ale_activate <= 1'b0;
 	end
-							
+
 	// Activation of read byte mechanism
 	if ( (state == `M_NAND_READ_PARAM_PAGE & substate == `MS_READ_DATA0) |			// initiate byte read for READ PARAMETER PAGE command
 			(state == `M_NAND_READ_STATUS & substate == `MS_READ_DATA0) |		// initiate byte read for READ STATUS command
 			(state == `M_NAND_READ & substate == `MS_READ_DATA0) |			// initiate byte read for READ command
 			(state == `M_NAND_READ_ID & substate == `MS_READ_DATA0) |			// initiate byte read for READ ID command
 			(state == `MI_BYPASS_DATA_RD & substate == `MS_BEGIN) ) begin 		// reading byte directly from the chip
-		io_rd_activate = 1'b1;
+		io_rd_activate <= 1'b1;
 	end else begin
-		io_rd_activate = 1'b0;
+		io_rd_activate <= 1'b0;
 	end
-							
+
 	// Activation of write byte mechanism
 	if ( (state == `M_NAND_PAGE_PROGRAM & substate == `MS_WRITE_DATA3) | 			// initiate byte write for PAGE_PROGRAM command
 		(state == `MI_BYPASS_DATA_WR & substate == `MS_WRITE_DATA0) ) begin 		// writing byte directly to the chip
-		io_wr_activate = 1'b1;
+		io_wr_activate <= 1'b1;
 	end else begin
-		io_wr_activate = 1'b0;
+		io_wr_activate <= 1'b0;
 	end
 
 
@@ -253,7 +254,7 @@ always @(posedge clk) begin
 
 		if(nreset == 1'b0) begin
 			$display("NM: NRESET SIGNAL RECEIVED, INITIATING RESET");
-			state = `M_RESET;
+			state <= `M_RESET;
 		end
 //		end else if(activate = '1') begin
 //			state	<= state_switch(to_integer(unsigned(cmd_in)));
@@ -263,164 +264,166 @@ always @(posedge clk) begin
 				// RESET state. Speaks for itself
 				`M_RESET: begin
 					$display("NM: RESET LOGIC EXECUTING");
-					state = `M_IDLE;
-					substate = `MS_BEGIN;
-					delay = 0;
-					byte_count = 0;
-					page_idx = 0;
-					current_address[0]=0;
-					current_address[1]=0;
-					current_address[2]=0;
-					current_address[3]=0;
-					current_address[4]=0;
-					data_bytes_per_page = 0;
-					oob_bytes_per_page = 0;
-					addr_cycles = 0;
-					status	= 8'h08;		// We start write protected!
-					nand_nce = 1'b1;
-					nand_nwp = 1'b0;
-					nand_nre = 1'b1;
-				end	
+					state <= `M_IDLE;
+					substate <= `MS_BEGIN;
+					delay <= 0;
+					byte_count <= 0;
+					page_idx <= 0;
+					current_address[0] <= 0;
+					current_address[1] <= 0;
+					current_address[2] <= 0;
+					current_address[3] <= 0;
+					current_address[4] <= 0;
+					data_bytes_per_page <= 512;
+					oob_bytes_per_page <= 16;
+					addr_cycles <= 4;
+					status	<= 8'h08;		// We start write protected!
+					nand_nce <= #1 1'b1;
+					nand_nwp <= #1 1'b0;
+					nand_nre <= #5 1'b1;
+				end
 				// This is in fact a command interpreter
 				`M_IDLE: begin
+					//$display("NM: IDLE");
 					if(activate == 1'b1) begin
-						state= cmd_in[5:0];
+						state <= cmd_in[5:0];
 					end
-				end	
+				end
 				// Reset the NAND chip
 				`M_NAND_RESET: begin
 					$display("NM: M_NAND_RESET received");
-					cle_data_in = 16'h00ff;
-					state = `M_WAIT;
-					n_state	= `M_IDLE;
-					delay = `t_wb + 8;
-				end	
+					cle_data_in <= 16'h00ff;
+					state <= `M_WAIT;
+					n_state	<= `M_IDLE;
+					delay <= `t_wb + 8;
+				end
 				// Read the status register of the controller
 				`MI_GET_STATUS: begin
 					$display("NM: MI_GET_STATUS received");
-					data_out = status;
-					state    = `M_IDLE;
-				end	
+					data_out <= status;
+					state    <= `M_IDLE;
+				end
 				// Set CE# to '0' (enable NAND chip)
 				`MI_CHIP_ENABLE: begin
-					$display("NM: MI_CHIP_ENABLE");
-					nand_nce = 1'b0;
-					state	 = `M_IDLE;
-					status[2]= 1'b1;
+					$display("NM: MI_CHIP_ENABLE received");
+					nand_nce <= #1 1'b0;
+					state	 <= `M_IDLE;
+					status[2] <= 1'b1;
 				end
 				// Set CE# to 1'b1 (disable NAND chip)
 				`MI_CHIP_DISABLE: begin
 					$display("NM: MI_CHIP_DISABLE received");
-					nand_nce = 1'b1;
-					state	 = `M_IDLE;
-					status[2]= 1'b0;
+					nand_nce <= #1 1'b1;
+					state	 <= `M_IDLE;
+					status[2] <= 1'b0;
 				end
 				// Set WP# to 1'b0 (enable write protection)
 				`MI_WRITE_PROTECT: begin
 					$display("NM: MI_WRITE_PROTECT received");
-					nand_nwp = 1'b0;
-					status[3]= 1'b1;
-					state	 = `M_IDLE;
+					nand_nwp <= #1 1'b0;
+					status[3] <= 1'b1;
+					state	 <= `M_IDLE;
 				end
 				// Set WP# to 1'b1 (disable write protection)
 				// By default, this controller has WP# set to 0 on reset
 				`MI_WRITE_ENABLE: begin
 					$display("NM: MI_WRITE_ENABLE received");
-					nand_nwp = 1'b1;
-					status[3]= 1'b0;
-					state	 = `M_IDLE;
+					nand_nwp <= #1 1'b1;
+					status[3] <= 1'b0;
+					state	 <= `M_IDLE;
 				end
 				// Reset the index register.
 				// Index register holds offsets into JEDEC ID, Parameter Page buffer or Data Page buffer depending on
 				// the operation being performed
 				`MI_RESET_INDEX: begin
 					$display("NM: MI_RESET_INDEX received");
-					page_idx = 0;
-					state	 = `M_IDLE;
-				end	
+					page_idx <= 0;
+					state	 <= `M_IDLE;
+				end
 				// Read 1 byte from JEDEC ID and increment the index register.
-				// If the value points outside the 5 byte JEDEC ID array, 
+				// If the value points outside the 5 byte JEDEC ID array,
 				// the register is reset to 0 and bit 4 of the status register
 				// is set to 1'b1
 				`MI_GET_ID_BYTE: begin
 					$display("NM: MI_GET_ID_BYTE received");
 					if(page_idx < 5) begin
-						data_out = chip_id[page_idx];
-						page_idx = page_idx + 1;
-						status[4] = 1'b0;
+						data_out <= chip_id[page_idx];
+						$display("NM: data_out has been set to: %x (%x) page_idx:%d",data_out,chip_id[page_idx],page_idx);
+						page_idx <= page_idx + 1;
+						status[4] <= 1'b0;
 					end else begin
-						data_out = 8'h00;
-						page_idx = 0;
-						status[4]= 1'b1;
+						data_out <= 8'h00;
+						page_idx <= 0;
+						status[4] <= 1'b1;
 					end
-					state = `M_IDLE;
-				end	
+					state <= `M_IDLE;
+				end
 				// Read 1 byte from 256 bytes buffer that holds the Parameter Page.
-				// If the value goes beyond 255, then the register is reset and 
+				// If the value goes beyond 255, then the register is reset and
 				// bit 4 of the status register is set to 1'b1
 				`MI_GET_PARAM_PAGE_BYTE: begin
 					$display("NM: MI_GET_PARAM_PAGE_BYTE received");
 					if(page_idx < 256) begin
-						data_out = page_param[page_idx];
-						page_idx = page_idx + 1;
-						status[4] = 1'b0;
+						data_out <= page_param[page_idx];
+						page_idx <= page_idx + 1;
+						status[4] <= 1'b0;
 					end else begin
-						data_out = 8'h00;
-						page_idx = 0;
-						status[4] = 1'b1;
+						data_out <= 8'h00;
+						page_idx <= 0;
+						status[4] <= 1'b1;
 					end
-					state = `M_IDLE;
-				end	
-				// Read 1 byte from the buffer that holds the content of last read 
-				// page. The limit is variable and depends on the values in 
-				// the Parameter Page. In case the index register points beyond 
+					state <= `M_IDLE;
+				end
+				// Read 1 byte from the buffer that holds the content of last read
+				// page. The limit is variable and depends on the values in
+				// the Parameter Page. In case the index register points beyond
 				// valid page content, its value is reset and bit 4 of the status
 				// register is set to 1'b1
 				`MI_GET_DATA_PAGE_BYTE: begin
 					$display("NM: MI_GET_DATA_PAGE_BYTE received");
 					if(page_idx < data_bytes_per_page + oob_bytes_per_page) begin
-						data_out = page_data[page_idx];
-						page_idx = page_idx + 1;
-						status[4] = 1'b0;
+						data_out <= page_data[page_idx];
+						page_idx <= page_idx + 1;
+						status[4] <= 1'b0;
 					end else begin
-						data_out = 8'h00;
-						page_idx = 0;
-						status[4] = 1'b1;
+						data_out <= 8'h00;
+						page_idx <= 0;
+						status[4] <= 1'b1;
 					end
-					state = `M_IDLE;
+					state <= `M_IDLE;
 				end
 				// Write 1 byte into the Data Page buffer at offset specified by
-				// the index register. If the value of the index register points 
+				// the index register. If the value of the index register points
 				// beyond valid page content, its value is reset and bit 4 of
 				// the status register is set to 1'b1
 				`MI_SET_DATA_PAGE_BYTE: begin
 					$display("NM: MI_SET_DATA_PAGE_BYTE received");
 					if(page_idx < data_bytes_per_page + oob_bytes_per_page) begin
-						page_data[page_idx] = data_in;
-						page_idx = page_idx + 1;
-						status[4] = 1'b0;
+						page_data[page_idx] <= data_in;
+						page_idx <= page_idx + 1;
+						status[4] <= 1'b0;
 					end else begin
-						page_idx = 0;
-						status[4] = 1'b1;
+						page_idx <= 0;
+						status[4] <= 1'b1;
 					end
-					state = `M_IDLE;
-				end	
-				// Gets the address byte specified by the index register. Bit 4 
-				// of the status register is set to 1'b1 if the value of the index 
-				// register points beyond valid address data and the value of 
+					state <= `M_IDLE;
+				end
+				// Gets the address byte specified by the index register. Bit 4
+				// of the status register is set to 1'b1 if the value of the index
+				// register points beyond valid address data and the value of
 				// the index register is reset
 				`MI_GET_CURRENT_ADDRESS_BYTE: begin
 					$display("NM: MI_GET_CURRENT_ADDRESS_BYTE received");
 					if(page_idx < addr_cycles) begin
-						data_out = current_address[page_idx];
-						page_idx = page_idx + 1;
-						status[4] = 1'b0;
+						data_out <= current_address[page_idx];
+						page_idx <= page_idx + 1;
+						status[4] <= 1'b0;
 					end else begin
-						page_idx = 0;
-						status[4] = 1'b1;
+						page_idx <= 0;
+						status[4] <= 1'b1;
 					end
-					state = `M_IDLE;
-				end	
+					state <= `M_IDLE;
+				end
 				// Sets the value of the address byte specified by the index register.Bit 4 
 				// of the status register is set to 1'b1 if the value of the index 
 				// register points beyond valid address data and the value of 
@@ -428,420 +431,412 @@ always @(posedge clk) begin
 				`MI_SET_CURRENT_ADDRESS_BYTE: begin
 					$display("NM: MI_SET_CURRENT_ADDRESS_BYTE received");
 					if(page_idx < addr_cycles) begin
-						current_address[page_idx] = data_in;
-						page_idx = page_idx + 1;
-						status[4] = 1'b0;
+						current_address[page_idx] <= data_in;
+						page_idx <= page_idx + 1;
+						status[4] <= 1'b0;
 					end else begin
-						page_idx = 0;
-						status[4] = 1'b1;
+						page_idx <= 0;
+						status[4] <= 1'b1;
 					end 
-					state= `M_IDLE;
+					state <= `M_IDLE;
 				end
 				// Program one page.
 				`M_NAND_PAGE_PROGRAM: begin
 					$display("NM: M_NAND_PAGE_PROGRAM received");
 					if(substate == `MS_BEGIN) begin
-						cle_data_in = 16'h0080;
-						substate= `MS_SUBMIT_COMMAND;
-						state 	= `M_WAIT;
-						n_state	= `M_NAND_PAGE_PROGRAM;
-						byte_count = 0;
+						cle_data_in <= 16'h0080;
+						substate <= `MS_SUBMIT_COMMAND;
+						state 	<= `M_WAIT;
+						n_state	<= `M_NAND_PAGE_PROGRAM;
+						byte_count <= 0;
 					end else if(substate == `MS_SUBMIT_COMMAND) begin
-						byte_count = byte_count + 1;
-						ale_data_in = {8'h00 ,current_address[byte_count]};
-						substate = `MS_SUBMIT_ADDRESS;
+						byte_count <= byte_count + 1;
+						ale_data_in <= {8'h00 ,current_address[byte_count]};
+						substate <= `MS_SUBMIT_ADDRESS;
 					end else if(substate == `MS_SUBMIT_ADDRESS) begin
 						if(byte_count < addr_cycles) begin
-							substate = `MS_SUBMIT_COMMAND;
+							substate <= `MS_SUBMIT_COMMAND;
 						end else begin
-							substate = `MS_WRITE_DATA0;
+							substate <= `MS_WRITE_DATA0;
 						end
-						state = `M_WAIT;
-						n_state	= `M_NAND_PAGE_PROGRAM;
+						state <= `M_WAIT;
+						n_state	<= `M_NAND_PAGE_PROGRAM;
 					end else if(substate == `MS_WRITE_DATA0) begin
-						delay = `t_adl;
-						state = `M_DELAY;
-						n_state = `M_NAND_PAGE_PROGRAM;
-						substate =	`MS_WRITE_DATA1;
-						page_idx = 0;
-						byte_count = 0;
+						delay <= `t_adl;
+						state <= `M_DELAY;
+						n_state <= `M_NAND_PAGE_PROGRAM;
+						substate <= `MS_WRITE_DATA1;
+						page_idx <= 0;
+						byte_count <= 0;
 					end else if(substate == `MS_WRITE_DATA1) begin
-						byte_count = byte_count + 1;
-						page_idx = page_idx + 1;
-						io_wr_data_in={ 8'h00 , page_data[page_idx] };
+						byte_count <= byte_count + 1;
+						page_idx <= page_idx + 1;
+						io_wr_data_in <= { 8'h00 , page_data[page_idx] };
 						if(status[1] == 1'b0) begin
-							substate = `MS_WRITE_DATA3;
+							substate <= `MS_WRITE_DATA3;
 						end else begin
-							substate = `MS_WRITE_DATA2;
+							substate <= `MS_WRITE_DATA2;
 						end
 					end else if(substate == `MS_WRITE_DATA2) begin
-						page_idx = page_idx + 1;
-						io_wr_data_in[15:8] = page_data[page_idx];
-						substate = `MS_WRITE_DATA3;
+						page_idx <= page_idx + 1;
+						io_wr_data_in[15:8] <= page_data[page_idx];
+						substate <= `MS_WRITE_DATA3;
 					end else if(substate == `MS_WRITE_DATA3) begin
 						if(byte_count < data_bytes_per_page + oob_bytes_per_page) begin
-							substate = `MS_WRITE_DATA1;
+							substate <= `MS_WRITE_DATA1;
 						end else begin
-							substate = `MS_SUBMIT_COMMAND1;
+							substate <= `MS_SUBMIT_COMMAND1;
 						end
-						n_state	= `M_NAND_PAGE_PROGRAM;
-						state	= `M_WAIT;
+						n_state	<= `M_NAND_PAGE_PROGRAM;
+						state	<= `M_WAIT;
 					end else if(substate == `MS_SUBMIT_COMMAND1) begin
-						cle_data_in = 16'h0010;
-						n_state	 = `M_NAND_PAGE_PROGRAM;
-						state	 = `M_WAIT;
-						substate = `MS_WAIT;
+						cle_data_in <= 16'h0010;
+						n_state	 <= `M_NAND_PAGE_PROGRAM;
+						state	 <= `M_WAIT;
+						substate <= `MS_WAIT;
 					end else if(substate == `MS_WAIT) begin
-						delay	= `t_wb + `t_prog;
-						state	= `M_DELAY;
-						n_state	= `M_NAND_PAGE_PROGRAM;
-						substate= `MS_END;
-						byte_count= 0;
-						page_idx= 0;
+						delay	<= `t_wb + `t_prog;
+						state	<= `M_DELAY;
+						n_state	<= `M_NAND_PAGE_PROGRAM;
+						substate <= `MS_END;
+						byte_count <= 0;
+						page_idx <= 0;
 					end else if(substate == `MS_END) begin
-						state	= `M_WAIT;
-						n_state	= `M_IDLE;
-						substate= `MS_BEGIN;
+						state	<= `M_WAIT;
+						n_state	<= `M_IDLE;
+						substate <= `MS_BEGIN;
 					end
-				end	
+				end
 				// Reads single page into the buffer.
 				`M_NAND_READ: begin
 					$display("NM: M_NAND_READ received");
 					if(substate == `MS_BEGIN) begin
-						cle_data_in	= 16'h0000;
-						substate	= `MS_SUBMIT_COMMAND;
-						state		= `M_WAIT;
-						n_state		= `M_NAND_READ;
-						byte_count	= 0;
+						cle_data_in	<= 16'h0000;
+						substate	<= `MS_SUBMIT_COMMAND;
+						state		<= `M_WAIT;
+						n_state		<= `M_NAND_READ;
+						byte_count	<= 0;
 					end else if(substate == `MS_SUBMIT_COMMAND) begin
-						byte_count	= byte_count + 1;
-						ale_data_in	= {8'h00 , current_address[byte_count]};
-						substate	= `MS_SUBMIT_ADDRESS;
+						byte_count	<= byte_count + 1;
+						ale_data_in	<= {8'h00 , current_address[byte_count]};
+						substate	<= `MS_SUBMIT_ADDRESS;
 					end else if(substate == `MS_SUBMIT_ADDRESS) begin
 						if(byte_count < addr_cycles) begin
-							substate	= `MS_SUBMIT_COMMAND;
+							substate	<= `MS_SUBMIT_COMMAND;
 						end else begin
-							substate	= `MS_SUBMIT_COMMAND1;
+							substate	<= `MS_SUBMIT_COMMAND1;
 						end
-						state			= `M_WAIT;
-						n_state			= `M_NAND_READ;
+						state			<= `M_WAIT;
+						n_state			<= `M_NAND_READ;
 					end else if(substate == `MS_SUBMIT_COMMAND1) begin
-						cle_data_in		= 16'h0030;
+						cle_data_in		<= 16'h0030;
 						//delay 			= `t_wb;
-						substate		= `MS_DELAY;
-						state 			= `M_WAIT;
-						n_state			= `M_NAND_READ;
+						substate		<= `MS_DELAY;
+						state 			<= `M_WAIT;
+						n_state			<= `M_NAND_READ;
 					end else if(substate == `MS_DELAY) begin
-						delay			= `t_wb;
-						substate		= `MS_READ_DATA0;
-						state			= `M_WAIT; //M_DELAY;
-						n_state			= `M_NAND_READ;
-						byte_count		= 0;
-						page_idx		= 0;
+						delay			<= `t_wb;
+						substate		<= `MS_READ_DATA0;
+						state			<= `M_WAIT; //M_DELAY;
+						n_state			<= `M_NAND_READ;
+						byte_count		<= 0;
+						page_idx		<= 0;
 					end else if(substate == `MS_READ_DATA0) begin
-						byte_count		= byte_count + 1;
-						n_state			= `M_NAND_READ;
-						delay			= `t_rr;
-						state			= `M_WAIT;
-						substate		= `MS_READ_DATA1;
+						byte_count		<= byte_count + 1;
+						n_state			<= `M_NAND_READ;
+						delay			<= `t_rr;
+						state			<= `M_WAIT;
+						substate		<= `MS_READ_DATA1;
 					end else if(substate == `MS_READ_DATA1) begin
-						page_data[page_idx]	= io_rd_data_out[7:0];
-						page_idx		= page_idx + 1;
+						page_data[page_idx]	<= io_rd_data_out[7:0];
+						page_idx		<= page_idx + 1;
 						if(byte_count == data_bytes_per_page + oob_bytes_per_page & status[1] == 1'b0) begin
-							substate	= `MS_END;
+							substate	<= `MS_END;
 						end else begin
 							if(status[1] == 1'b0) begin
-								substate		= `MS_READ_DATA0;
+								substate		<= `MS_READ_DATA0;
 							end else begin
-								substate		= `MS_READ_DATA2;
+								substate		<= `MS_READ_DATA2;
 							end
 						end
 						
 					end else if(substate == `MS_READ_DATA2) begin
-						page_idx		= page_idx + 1;
-						page_data[page_idx]	= io_rd_data_out[15:8];
+						page_idx		<= page_idx + 1;
+						page_data[page_idx]	<= io_rd_data_out[15:8];
 						if(byte_count == data_bytes_per_page + oob_bytes_per_page) begin
-							substate	= `MS_END;
+							substate	<= `MS_END;
 						end else begin
-							substate	= `MS_READ_DATA0;
+							substate	<= `MS_READ_DATA0;
 						end
 					end else if(substate == `MS_END) begin
-						substate		= `MS_BEGIN;
-						state			= `M_IDLE;
-						byte_count		= 0;
+						substate		<= `MS_BEGIN;
+						state			<= `M_IDLE;
+						byte_count		<= 0;
 					end
-				end	
+				end
 				// Read status byte
 				`M_NAND_READ_STATUS: begin
 					$display("NM: M_NAND_READ_STATUS received");
 					if(substate == `MS_BEGIN) begin
-						cle_data_in		= 16'h0070;
-						substate		= `MS_SUBMIT_COMMAND;
-						state			= `M_WAIT;
-						n_state			= `M_NAND_READ_STATUS;
+						cle_data_in		<= 16'h0070;
+						substate		<= `MS_SUBMIT_COMMAND;
+						state			<= `M_WAIT;
+						n_state			<= `M_NAND_READ_STATUS;
 					end else if(substate == `MS_SUBMIT_COMMAND) begin
-						delay			= `t_whr;
-						substate		= `MS_READ_DATA0;
-						state			= `M_DELAY;
-						n_state			= `M_NAND_READ_STATUS;
+						delay			<= `t_whr;
+						substate		<= `MS_READ_DATA0;
+						state			<= `M_DELAY;
+						n_state			<= `M_NAND_READ_STATUS;
 					end else if(substate == `MS_READ_DATA0) begin
-						substate		= `MS_READ_DATA1;
-						state			= `M_WAIT;
-						n_state			= `M_NAND_READ_STATUS;
+						substate		<= `MS_READ_DATA1;
+						state			<= `M_WAIT;
+						n_state			<= `M_NAND_READ_STATUS;
 					end else if(substate == `MS_READ_DATA1) begin // This is to make sure 'data_out' has valid data before 'busy' goes low.
-						data_out		= io_rd_data_out[7:0];
-						state			= `M_NAND_READ_STATUS;
-						substate		= `MS_END;
+						data_out		<= io_rd_data_out[7:0];
+						state			<= `M_NAND_READ_STATUS;
+						substate		<= `MS_END;
 					end else if(substate == `MS_END) begin
-						substate		= `MS_BEGIN;
-						state			= `M_IDLE;
+						substate		<= `MS_BEGIN;
+						state			<= `M_IDLE;
 					end
-				end	
+				end
 				// Erase block specified by current_address
 				`M_NAND_BLOCK_ERASE: begin
 					$display("NM: M_NAND_BLOCK_ERASE received");
 					if(substate == `MS_BEGIN) begin
-						cle_data_in		= 16'h0060;
-						substate		= `MS_SUBMIT_COMMAND;
-						state			= `M_WAIT;
-						n_state			= `M_NAND_BLOCK_ERASE;
-						byte_count		= 3;							// number of address bytes to submit
-						
+						cle_data_in		<= 16'h0060;
+						substate		<= `MS_SUBMIT_COMMAND;
+						state			<= `M_WAIT;
+						n_state			<= `M_NAND_BLOCK_ERASE;
+						byte_count		<= 3;							// number of address bytes to submit
 					end else if(substate == `MS_SUBMIT_COMMAND) begin
-						byte_count		= byte_count - 1;
-						ale_data_in[15:8]= 8'h00;
-						ale_data_in[7:0]	= current_address[5 - byte_count];
-						substate		= `MS_SUBMIT_ADDRESS;
-						state			= `M_WAIT;
-						n_state			= `M_NAND_BLOCK_ERASE;
-						
+						byte_count		<= byte_count - 1;
+						ale_data_in[15:8] <= 8'h00;
+						ale_data_in[7:0]	<= current_address[5 - byte_count];
+						substate		<= `MS_SUBMIT_ADDRESS;
+						state			<= `M_WAIT;
+						n_state			<= `M_NAND_BLOCK_ERASE;
 					end else if(substate == `MS_SUBMIT_ADDRESS) begin
 						if(0 < byte_count) begin
-							substate	= `MS_SUBMIT_COMMAND;
+							substate	<= `MS_SUBMIT_COMMAND;
 						end else begin
-							substate	= `MS_SUBMIT_COMMAND1;
+							substate	<= `MS_SUBMIT_COMMAND1;
 						end
-						
 					end else if(substate == `MS_SUBMIT_COMMAND1) begin
-						cle_data_in		= 16'h00d0;
-						substate		= `MS_END;
-						state			= `M_WAIT;
-						n_state			= `M_NAND_BLOCK_ERASE;
-						
+						cle_data_in		<= 16'h00d0;
+						substate		<= `MS_END;
+						state			<= `M_WAIT;
+						n_state			<= `M_NAND_BLOCK_ERASE;
 					end else if(substate == `MS_END) begin
-						n_state			= `M_IDLE;
-						delay 			= `t_wb + `t_bers;
-						state			= `M_DELAY;
-						substate		= `MS_BEGIN;
-						byte_count		= 0;
+						n_state			<= `M_IDLE;
+						delay 			<= `t_wb + `t_bers;
+						state			<= `M_DELAY;
+						substate		<= `MS_BEGIN;
+						byte_count		<= 0;
 					end
-				end	
+				end
 				// Read NAND chip JEDEC ID
 				`M_NAND_READ_ID: begin
-					$display("NM: M_NAND_READ_ID received");
 					if(substate == `MS_BEGIN) begin
-						$display("NM: READ_ID SUBSTATE: MS_BEGIN");
-						cle_data_in		= 16'h0090;
-						substate		= `MS_SUBMIT_COMMAND;
-						state			= `M_WAIT;
-						n_state 		= `M_NAND_READ_ID;
-					end else if(substate == `MS_SUBMIT_COMMAND) begin
-						$display("NM: READ_ID SUBSTATE: SUBMIT_COMMAND");
-						ale_data_in		= 16'h0000;
-						substate		= `MS_SUBMIT_ADDRESS;
-						state 			= `M_WAIT;
-						n_state			= `M_NAND_READ_ID;
+						$display("NM: READ_ID: 0x06 -> ONFI Command 90h");
+						cle_data_in		<= 16'h0090;
+						substate		<= `MS_SUBMIT_ADDRESS;
+						state			<= `M_WAIT;
+						n_state 		<= `M_NAND_READ_ID;
+						delay			<= 4; // THIS DELAY WAS MISSING WHICH CAUSED THE ALE TO START TOO EARLY. HOW CAN WE CALCULATE THE CORRECT DELAAY VALUE?
 					end else if(substate == `MS_SUBMIT_ADDRESS) begin
-						$display("NM: READ_ID SUBSTATE: SUBMIT_ADDRESS");
-						delay			= `t_wb;
-						state			= `M_DELAY;
-						n_state			= `M_NAND_READ_ID;
-						substate		= `MS_READ_DATA0;
-						byte_count		= 5;
-						page_idx		= 0;
+						$display("NM: MS_SUBMIT_ADDRESS READ_ID: Address 00h");
+						ale_data_in		<= 16'h0000;
+						substate		<= `MS_READ_DATA0;
+						state 			<= `M_WAIT;
+						n_state			<= `M_NAND_READ_ID;
+						byte_count		<= 4;
+						page_idx		<= 0;
+						delay			<= `t_wb + `t_rr; // + 2;
 					end else if(substate == `MS_READ_DATA0) begin
-						$display("NM: READ_ID SUBSTATE: READ_DATA0");
-						byte_count		= byte_count - 1;
-						state			= `M_WAIT;
-						n_state			= `M_NAND_READ_ID;
-						substate		= `MS_READ_DATA1;
+						$display("%0t NM: MS_READ_DATA0",$realtime);
+						byte_count		<= byte_count - 1;
+						state			<= `M_WAIT;
+						n_state			<= `M_NAND_READ_ID;
+						substate		<= `MS_READ_DATA1;
+						delay			<= `t_rr;
+
 					end else if(substate == `MS_READ_DATA1) begin
-						$display("NM: READ_ID SUBSTATE: READ_DATA1");
-						chip_id[page_idx]	= io_rd_data_out[7:0];
+						$display("%0t NM: MS_READ_DATA1 READ_ID: Byte %d = %h (io_rd_data_in would be %h)", $realtime,page_idx, io_rd_data_out[7:0],io_rd_data_in[7:0]);
+						chip_id[page_idx]	<= io_rd_data_out[7:0];
 						if(0 < byte_count) begin
-							page_idx	= page_idx + 1;
-							substate	= `MS_READ_DATA0;
+							page_idx	<= page_idx + 1;
+							substate	<= `MS_READ_DATA0;
 						end else begin
-							substate	= `MS_END;
+							substate	<= `MS_END;
 						end
 					end else if(substate == `MS_END) begin
-						$display("NM: READ_ID SUBSTATE: MS_END");
-						byte_count		= 0;
-						page_idx		= 0;
-						substate		= `MS_BEGIN;
-						state			= `M_IDLE;
+						byte_count		<= 0;
+						page_idx		<= 0;
+						substate		<= `MS_BEGIN;
+						state			<= `M_IDLE;
 					end
-				end	
+				end
 				// *data_in is assigned one clock cycle after *_activate is triggered!!!!
 				// According to ONFI's timing diagrams this should be normal, but who knows...
 				`M_NAND_READ_PARAM_PAGE: begin
 					$display("NM: M_NAND_READ_PARAM_PAGE received");
 					if(substate == `MS_BEGIN) begin
-						cle_data_in		= 16'h00ec;
-						substate		= `MS_SUBMIT_COMMAND;
-						state			= `M_WAIT;
-						n_state 		= `M_NAND_READ_PARAM_PAGE;
+						cle_data_in		<= 16'h00ec;
+						substate		<= `MS_SUBMIT_COMMAND;
+						state			<= `M_WAIT;
+						n_state 		<= `M_NAND_READ_PARAM_PAGE;
 					end else if(substate == `MS_SUBMIT_COMMAND) begin
-						ale_data_in		= 16'h0000;
-						substate		= `MS_SUBMIT_ADDRESS;
-						state 			= `M_WAIT;
-						n_state			= `M_NAND_READ_PARAM_PAGE;
+						ale_data_in		<= 16'h0000;
+						substate		<= `MS_SUBMIT_ADDRESS;
+						state 			<= `M_WAIT;
+						n_state			<= `M_NAND_READ_PARAM_PAGE;
 					end else if(substate == `MS_SUBMIT_ADDRESS) begin
-						delay			= `t_wb + `t_rr;
-						state			= `M_WAIT;//M_DELAY;
-						n_state			= `M_NAND_READ_PARAM_PAGE;
-						substate		= `MS_READ_DATA0;
-						byte_count		= 256;
-						page_idx		= 0;
+						delay			<= `t_wb + `t_rr;
+						state			<= `M_WAIT;//M_DELAY;
+						n_state			<= `M_NAND_READ_PARAM_PAGE;
+						substate		<= `MS_READ_DATA0;
+						byte_count		<= 256;
+						page_idx		<= 0;
 					end else if(substate == `MS_READ_DATA0) begin
-						byte_count		= byte_count - 1;
-						state			= `M_WAIT;
-						n_state			= `M_NAND_READ_PARAM_PAGE;
-						substate		= `MS_READ_DATA1;
+						byte_count		<= byte_count - 1;
+						state			<= `M_WAIT;
+						n_state			<= `M_NAND_READ_PARAM_PAGE;
+						substate		<= `MS_READ_DATA1;
 					end else if(substate == `MS_READ_DATA1) begin
-						page_param[page_idx]	= io_rd_data_out[7:0];
+						page_param[page_idx]	<= io_rd_data_out[7:0];
 						if(0 < byte_count) begin
-							page_idx	= page_idx + 1;
-							substate	= `MS_READ_DATA0;
+							page_idx	<= page_idx + 1;
+							substate	<= `MS_READ_DATA0;
 						end else begin
-							substate	= `MS_END;
+							substate	<= `MS_END;
 						end
 					end else if(substate == `MS_END) begin
-						byte_count		= 0;
-						page_idx		= 0;
-						substate		= `MS_BEGIN;
-						state			= `M_IDLE;
+						byte_count		<= 0;
+						page_idx		<= 0;
+						substate		<= `MS_BEGIN;
+						state			<= `M_IDLE;
 						
 						// Check the chip for being ONFI compliant
 						if(page_param[0] == 8'h4f & page_param[1] == 8'h4e & page_param[2] == 8'h46 & page_param[3] == 8'h49) begin
 							// Set status bit 0
-							status[0]	= 1'b1;
+							status[0]	<= 1'b1;
 							
 							// Bus width
-							status[1]	= page_param[6][0];
+							status[1]	<= page_param[6][0];
 						 
 							// Setup counters:
 							// Normal FLAsh
 							if(page_param[63] == 8'h20) begin
 								// Number of bytes per page
-								tmp_int			= {page_param[83],page_param[82],page_param[81],page_param[80]};
-								data_bytes_per_page 	= tmp_int;
+								tmp_int			<= {page_param[83],page_param[82],page_param[81],page_param[80]};
+								data_bytes_per_page 	<= tmp_int;
 								
 								// Number of spare bytes per page (OOB)
-								tmp_int			= {16'b0,page_param[85],page_param[84]};
-								oob_bytes_per_page	= tmp_int;
+								tmp_int			<= {16'b0,page_param[85],page_param[84]};
+								oob_bytes_per_page	<= tmp_int;
 								
 								// Number of address cycles
-								addr_cycles		= 11'(page_param[101][3:0]) + 11'(page_param[101][7:4]);
+								addr_cycles		<= 11'(page_param[101][3:0]) + 11'(page_param[101][7:4]);
 							end else begin
 								// Number of bytes per page
-								tmp_int			= {page_param[82],page_param[81],page_param[80],page_param[79]};
-								data_bytes_per_page 	= tmp_int;
+								tmp_int			<= {page_param[82],page_param[81],page_param[80],page_param[79]};
+								data_bytes_per_page 	<= tmp_int;
 								
 								// Number of spare bytes per page (OOB)
-								tmp_int			= {16'b0,page_param[84],page_param[83]};
-								oob_bytes_per_page	= tmp_int;
+								tmp_int			<= {16'b0,page_param[84],page_param[83]};
+								oob_bytes_per_page	<= tmp_int;
 								
 								// Number of address cycles
-								addr_cycles		= 11'(page_param[100][3:0]) + 11'(page_param[100][7:4]);
+								addr_cycles		<= 11'(page_param[100][3:0]) + 11'(page_param[100][7:4]);
 							end
 						end
 					end
-				end	
+				end
 				// Wait for latch and IO modules to become ready as well as for NAND's R/B# to be 1'b1
 				`M_WAIT: begin
 					//$display("NM: M_WAIT state received %d", delay);
 					if(delay > 1) begin
-						delay		= delay - 1;
+						delay		<= delay - 1;
 					end else if(1'b0 == (cle_busy | ale_busy | io_rd_busy | io_wr_busy | (!nand_rnb))) begin
 						$display("NM: M_WAIT COUNTDOWN FINISHED. Pushing state");
-						state		= n_state;
+						state		<= n_state;
 					end else begin
-						$display("NM: M_WAIT COUNTDOWN FINISHED, BUT WE ARE NOT MOVING FORWARD DUE TO SIGNALS");
+						//$display("NM: M_WAIT COUNTDOWN FINISHED, BUT WE ARE NOT MOVING FORWARD DUE TO SIGNALS");
 					end
-				end	
+				end
 				// Simple delay mechanism
 				`M_DELAY: begin
 					$display("NM: M_DELAY");
 					if(delay > 1) begin
-						delay 		= delay - 1;
+						delay 		<= delay - 1;
 					end else begin
-						state		= n_state;
+						state		<= n_state;
 					end
-				end	
+				end
 				`MI_BYPASS_ADDRESS: begin
 					if(substate == `MS_BEGIN) begin
-						ale_data_in	= {8'h00,data_in[7:0]};
-						substate	= `MS_SUBMIT_ADDRESS;
-						state 		= `M_WAIT;
-						n_state		= `MI_BYPASS_ADDRESS;
+						ale_data_in	<= {8'h00,data_in[7:0]};
+						substate	<= `MS_SUBMIT_ADDRESS;
+						state 		<= `M_WAIT;
+						n_state		<= `MI_BYPASS_ADDRESS;
 						
 					end else if(substate == `MS_SUBMIT_ADDRESS) begin
-						delay		= `t_wb + `t_rr;
-						state		= `M_WAIT;//M_DELAY;
-						n_state		= `MI_BYPASS_ADDRESS;
-						substate	= `MS_END;
+						delay		<= `t_wb + `t_rr;
+						state		<= `M_WAIT;//M_DELAY;
+						n_state		<= `MI_BYPASS_ADDRESS;
+						substate	<= `MS_END;
 						
 					end else if(substate == `MS_END) begin
-						substate 	= `MS_BEGIN;
-						state 		= `M_IDLE;
+						substate 	<= `MS_BEGIN;
+						state 		<= `M_IDLE;
 					end
 				end	
 				`MI_BYPASS_COMMAND: begin
 					if(substate == `MS_BEGIN) begin
-						cle_data_in	= {8'h00,data_in[7:0]};
-						substate	= `MS_SUBMIT_COMMAND;
-						state 		= `M_WAIT;
-						n_state		= `MI_BYPASS_COMMAND;
+						cle_data_in	<= {8'h00,data_in[7:0]};
+						substate	<= `MS_SUBMIT_COMMAND;
+						state 		<= `M_WAIT;
+						n_state		<= `MI_BYPASS_COMMAND;
 						
 					end else if(substate == `MS_SUBMIT_COMMAND) begin
-						delay		= `t_wb + `t_rr;
-						state		= `M_WAIT;//M_DELAY;
-						n_state		= `MI_BYPASS_COMMAND;
-						substate	= `MS_END;
+						delay		<= `t_wb + `t_rr;
+						state		<= `M_WAIT;//M_DELAY;
+						n_state		<= `MI_BYPASS_COMMAND;
+						substate	<= `MS_END;
 						
 					end else if(substate == `MS_END) begin
-						substate 	= `MS_BEGIN;
-						state 		= `M_IDLE;
+						substate 	<= `MS_BEGIN;
+						state 		<= `M_IDLE;
 					end
 				end	
 				`MI_BYPASS_DATA_WR: begin
 					if(substate == `MS_BEGIN) begin
-						io_wr_data_in[15:0] = {8'h00,data_in[7:0]}; //page_data(page_idx);
-						substate 	= `MS_WRITE_DATA0;
-						state 		= `M_WAIT;
-						n_state		= `MI_BYPASS_DATA_WR;
+						io_wr_data_in[15:0] <= {8'h00,data_in[7:0]}; //page_data(page_idx);
+						substate 	<= `MS_WRITE_DATA0;
+						state 		<= `M_WAIT;
+						n_state		<= `MI_BYPASS_DATA_WR;
 						
 					end else if(substate == `MS_WRITE_DATA0) begin
-						state 		= `M_WAIT;
-						n_state 	= `M_IDLE;
-						substate	= `MS_BEGIN;
+						state 		<= `M_WAIT;
+						n_state 	<= `M_IDLE;
+						substate	<= `MS_BEGIN;
 					end
 				end	
 				`MI_BYPASS_DATA_RD: begin
 					if(substate == `MS_BEGIN) begin
-						substate	= `MS_READ_DATA0;
+						substate	<= `MS_READ_DATA0;
 						
 					end else if(substate == `MS_READ_DATA0) begin
-						//page_data(page_idx) = io_rd_data_out[7:0];
-						data_out[7:0] = io_rd_data_out[7:0];
-						substate	= `MS_BEGIN;
-						state 		= `M_IDLE;
+						//page_data(page_idx) <= io_rd_data_out[7:0];
+						data_out[7:0] <= io_rd_data_out[7:0];
+						substate	<= `MS_BEGIN;
+						state 		<= `M_IDLE;
 					end
-				end	
+				end
 				// For just in case ("Shit happens..." (C) Forrest Gump)
 				default:
-					state 			= `M_RESET;
+					state 			<= `M_RESET;
 			endcase
 		end
 	end
