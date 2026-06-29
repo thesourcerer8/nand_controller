@@ -163,10 +163,10 @@ module s34ml01g1
 
     parameter PartID         = "s34ml01g1";
     parameter MaxData        = 8'hFF;
-    parameter BlockNum       = 1023;
-    parameter BlockSize      = 63;
-    parameter PageNum        = 16'hFFFF;
-    parameter PageNumInBl    = 64;
+    parameter BlockNum       = 15; //1023;
+    parameter BlockSize      = 1; // 63;
+    parameter PageNum        = 10; // 16'hFFFF;
+    parameter PageNumInBl    = 2; //64;
     parameter PageSize       = 2111;
     parameter SegmentNum     = 7;   // 7 segments within page
     parameter SegmentSize    = 512;
@@ -3143,16 +3143,13 @@ module memory_features();
 
     // higher-level routines
     // provided memory RW operation class interface
-    class rw_interface_c;
-
-        low_level_interface_c low_level_interface;
+    class rw_interface_c extends low_level_interface_c;
 
         // assure proper initialization
         function new;
             integer new_iter;
         begin
-            // allocate low level interface object
-            low_level_interface = new;
+            super.new();
         end
         endfunction
 
@@ -3170,7 +3167,7 @@ module memory_features();
                 mem_data = MaxData;
             else
             begin
-                low_level_interface.position_list(
+                position_list(
                     address_a,
                     linked_list[list_id]);
                 if (found != null)
@@ -3206,7 +3203,7 @@ module memory_features();
                 // Handle possible root value update
                 if (linked_list[list_id] !== null)
                 begin
-                    low_level_interface.insert_list(
+                    insert_list(
                         address_a,
                         data_a,
                         list_id);
@@ -3223,7 +3220,7 @@ module memory_features();
                 // No linked list, NOP, initial value implicit
                 if (linked_list[list_id] !== null)
                 begin
-                    low_level_interface.remove_list(
+                    remove_list(
                         address_a,
                         list_id);
                 end
@@ -3240,15 +3237,15 @@ module memory_features();
         begin
             list_id = address_low / list_size;
             if (linked_list[list_id] != null)
-                low_level_interface.remove_list_range(
+                remove_list_range(
                     address_low,
                     address_high,
                     list_id);
-            low_level_interface.create_list_range(
+            create_list_range(
                 address_low,
                 address_high
                 );
-            low_level_interface.insert_list_range(
+            insert_list_range(
                 list_id
                 );
         end
@@ -3262,7 +3259,7 @@ module memory_features();
             integer list_id;
         begin
             list_id = address_low / list_size;
-            low_level_interface.remove_list_range(
+            remove_list_range(
                 address_low,
                 address_high,
                 list_id
