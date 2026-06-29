@@ -30,7 +30,8 @@ verilatort:
 
 
 iverilogs: # Contains Samsung Flash
-	iverilog -o testbenchs34 testbenchs34.sv -Wall -g2005-sv -s testbench k9f1208.sv
+	iverilog -o testbenchs34 testbenchs34.sv -Wall -g2005-sv -s testbench s34ml01g1.sv
+	# k9f1208.sv
 	vvp testbenchs34 |tee testbenchs34.log
 	#sigrok-cli -I vcd -i testbenchs34.vcd -o testbenchs34.sr >/dev/null || true
 	#sigrok-cli -i testbenchs34.sr -P onfi -A onfi --protocol-decoder-samplenum || true
