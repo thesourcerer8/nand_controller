@@ -7,8 +7,8 @@
 //
 //  MODIFICATION HISTORY:
 //
-//  version: | author:    | mod date: | changes made:
-//  V1.0      D.Komaromi    04 Oct 01   Initial Release
+//  version: | author: Â  Â | mod date: | changes made:
+//  V1.0 Â  Â  Â D.Komaromi    04 Oct 01 Â  Initial Release
 //////////////////////////////////////////////////////////////////////////////
 //  PART DESCRIPTION:
 //
@@ -152,7 +152,7 @@ module k9f1208
             IO1_Pass,
             IO0_Pass  } = DOut_Pass;
 
-    reg R_zd = 1'b0;
+    reg R_zd = 1'b1;
 
     parameter mem_file_name   = "none";
     parameter spare_file_name = "none";
@@ -460,6 +460,7 @@ specify
 
 
 // Data ouptut paths
+/* verilator lint_off SPECIFYIGN */
     if (FROMCE)
             ( CENeg => IO0 ) = tpd_CENeg_IO0;
     if (FROMCE)
@@ -502,11 +503,12 @@ specify
 
     if ( ~CENeg )
         ( RENeg =>  R ) = tpd_RENeg_R;
+/* verilator lint_on SPECIFYIGN */
 
 ////////////////////////////////////////////////////////////////////////////////
 // Timing Violation                                                           //
 ////////////////////////////////////////////////////////////////////////////////
-
+`ifndef __ICARUS__
         $setup ( IO0 ,posedge WENeg &&& Check_IO0_WENeg ,tsetup_IO0_WENeg,Viol);
         $setup ( IO1 ,posedge WENeg &&& Check_IO0_WENeg ,tsetup_IO0_WENeg,Viol);
         $setup ( IO2 ,posedge WENeg &&& Check_IO0_WENeg ,tsetup_IO0_WENeg,Viol);
@@ -570,7 +572,7 @@ specify
         $period(posedge WENeg                         , tperiod_WENeg);
         $period(negedge RENeg                         , tperiod_RENeg);
         $period(posedge RENeg                         , tperiod_RENeg);
-
+`endif
     endspecify
 
      //Used as wait periods
@@ -975,12 +977,14 @@ specify
 
     always @ (posedge WENeg)
     begin
+	$display("T:%0t FLASH: posedge WENeg received, old AddrCom=%d",$realtime,AddrCom);
         // latch 8 bit read address
         if (ALE && ~CENeg && WENeg)
             AddrCom = A_tmp[7:0];
         // latch data
         if (~ALE && ~CENeg && RENeg)
             Data   =  D_tmp[7:0];
+	$display("T:%0t FLASH: posedge WENeg received, new AddrCom=%d",$realtime,AddrCom);
     end
 
     //////////////////////////////////////////////////////////////////////////
@@ -1151,7 +1155,7 @@ specify
                     next_state = ID;
                 else if ( CLE  && Data==8'hFF  )
                     next_state = RESET; // reset
-	        $display("T:%0t FLASH: next state chosen: %h",$realtime,next_state);
+	        $display("T:%0t FLASH: next state chosen: %h (ALE=%d,CLE=%d,AddrCom=%d,Data=%d)",$realtime,next_state,ALE,CLE,AddrCom,Data);
             end
 
             ID :
@@ -1480,7 +1484,7 @@ specify
 
     always @( posedge oe)
     begin: Output
-	$display("T:%0t FLASH: posedge oe",$realtime);
+	$display("T:%0t FLASH: posedge oe (current_state=%d)",$realtime,current_state);
         case (current_state)
             IDLE :
             begin
