@@ -163,7 +163,8 @@ begin
 	nreset = 1'b1;
 	#10
 
-	#10000 // wait(PoweredUp);
+	wait(flash.PoweredUp); // Wait for flash 100us power-up to complete
+	#100 // Small settling time after PoweredUp
 
         // Should we do a RESET or does the controller do it itself?
 	
