@@ -113,7 +113,7 @@ module testbench ();
 		.enable   (1'b0)
 	);
 
-        k9f1208 flash (
+        s34ml01g1 flash (
 		.IO7 (nand_data[7]),
 		.IO6 (nand_data[6]),
 		.IO5 (nand_data[5]),
