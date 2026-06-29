@@ -16,6 +16,12 @@
 `include "nand_master.sv"
 `timescale 1 ns/10 ps  // time-unit = 1 ns, precision = 10 ps
 
+`define toggle_activate \
+	activate = 1'b1; \
+	#2.5ns \
+	activate = 1'b0; \
+	#2.5ns
+
 module ice40nand ();
 	reg clk =1'b1;
 
@@ -133,9 +139,7 @@ begin
 	$display ("TB:%0t Reset the controller (0x01)", $realtime);
 	#5
 	cmd_in = `M_RESET;
-	activate = 1'b1;
-	#2
-	activate = 1'b0;
+	`toggle_activate;
 
 	#100
 	wait(~busy);
@@ -147,9 +151,7 @@ begin
 	#5ns
 	cmd_in = `MI_CHIP_ENABLE;
 	data_in = 8'h00; // Which CE line?
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
+	`toggle_activate;
 
 	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
 
@@ -157,10 +159,8 @@ begin
 	$display ("TB:%0t NAND RESET (0x04)", $realtime);
 	#5ns 
 	cmd_in = `M_NAND_RESET;
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`toggle_activate;
+
 	wait(~busy);
 	#2.5ns
 
@@ -174,9 +174,7 @@ begin
 	data_in = 8'h00;
 	cmd_in = `M_NAND_READ_ID;
 	#5ns
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
+	`toggle_activate;
 
 	#5ns
 	$display ("TB:%0t TB: Busy: %h should be 1", $realtime, busy);
@@ -189,66 +187,44 @@ begin
 	$display ("TB:%0t TB: Read the bytes of the ID (0x13)", $realtime);
 	cmd_in = `MI_GET_ID_BYTE;
 	// 1
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`toggle_activate;
+
 	$display ("TB:%0t TB: ID0: %h", $realtime, data_out);
         uart_send(data_out);
 
 	// 2
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`toggle_activate;
+
 	$display ("TB:%0t TB: ID1: %h", $realtime, data_out);
         uart_send(data_out);
 
 	// 3
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`toggle_activate;
 	$display ("TB:%0t TB: ID2: %h", $realtime, data_out);
         uart_send(data_out);
 
 	// 4
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`toggle_activate;
 	$display ("TB:%0t TB: ID3: %h", $realtime, data_out);
         uart_send(data_out);
 
 	// 5
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`toggle_activate;
 	$display ("TB:%0t TB: ID4: %h", $realtime, data_out);
         uart_send(data_out);
 
 	// 5
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`toggle_activate;
 	$display ("TB:%0t TB: ID5: %h", $realtime, data_out);
         uart_send(data_out);
 
 	// 5
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`toggle_activate;
 	$display ("TB:%0t TB: ID6: %h", $realtime, data_out);
         uart_send(data_out);
 
 	// 5
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`toggle_activate;
 	$display ("TB:%0t TB: ID7: %h", $realtime, data_out);
         uart_send(data_out);
 
@@ -262,11 +238,7 @@ begin
 	// GET STATUS
 	$display ("TB:%0t Get Status (0x0D)", $realtime);
 	cmd_in = `MI_GET_STATUS;
-	#2.5ns
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns	
+	`toggle_activate;
 	$display ("TB: Status: %h", data_out);
 
 	wait(~busy);
@@ -276,11 +248,7 @@ begin
 	// it at the right place
 	$display ("TB:%0t Reset Buffer Index (0x12)", $realtime);
 	cmd_in = `MI_RESET_INDEX;
-	#2.5ns
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns	
+	`toggle_activate;
 
         wait(~busy);
 	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
@@ -288,11 +256,7 @@ begin
 	// READ PAGE
 	$display ("TB:%0t NAND READ Page into internal buffer (0x09)", $realtime);
 	cmd_in = `M_NAND_READ;
-	#2.5ns
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`toggle_activate;
         #10ns
 
 	wait(~busy);
@@ -302,11 +266,7 @@ begin
 	// start
 	$display ("TB:%0t Reset Buffer Index (0x12)", $realtime);
 	cmd_in = `MI_RESET_INDEX;
-	#2.5ns
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns	
+	`toggle_activate;
 
 	wait(~busy);
 	$display ("TB:%0t Busy: %h should be 0", $realtime, busy);
@@ -315,11 +275,7 @@ begin
 	// Now we can read each byte
 	$display ("TB:%0t Read Data Page Byte (0x15)", $realtime);
 	cmd_in = `MI_GET_DATA_PAGE_BYTE;
-	#2.5ns
-	activate = 1'b1;
-	#2.5ns
-	activate = 1'b0;
-	#2.5ns
+	`toggle_activate;
 	$display ("TB:Data Page Byte: %h", data_out);
 
 	wait(~busy);
