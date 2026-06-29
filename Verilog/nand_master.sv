@@ -640,19 +640,24 @@ always @(posedge clk) begin
 					if(substate == `MS_BEGIN) begin
 						$display("NM: READ_ID: 0x06 -> ONFI Command 90h");
 						cle_data_in		<= 16'h0090;
-						substate		<= `MS_SUBMIT_ADDRESS;
+						substate		<= `MS_SUBMIT_COMMAND; // Wait t_wb for flash to transition IDLE->ID_PREL
 						state			<= `M_WAIT;
 						n_state 		<= `M_NAND_READ_ID;
-						delay			<= 4; // THIS DELAY WAS MISSING WHICH CAUSED THE ALE TO START TOO EARLY. HOW CAN WE CALCULATE THE CORRECT DELAAY VALUE?
-					end else if(substate == `MS_SUBMIT_ADDRESS) begin
-						$display("NM: MS_SUBMIT_ADDRESS READ_ID: Address 00h");
+						delay			<= `t_wb;
+					end else if(substate == `MS_SUBMIT_COMMAND) begin
+						$display("NM: MS_SUBMIT_COMMAND READ_ID: now sending Address 00h");
 						ale_data_in		<= 16'h0000;
+						substate		<= `MS_SUBMIT_ADDRESS;
+						state 			<= `M_WAIT;
+						n_state			<= `M_NAND_READ_ID;
+					end else if(substate == `MS_SUBMIT_ADDRESS) begin
+						$display("NM: MS_SUBMIT_ADDRESS READ_ID: Address latched, waiting t_wb+t_rr");
 						substate		<= `MS_READ_DATA0;
 						state 			<= `M_WAIT;
 						n_state			<= `M_NAND_READ_ID;
 						byte_count		<= 4;
 						page_idx		<= 0;
-						delay			<= `t_wb + `t_rr; // + 2;
+						delay			<= `t_wb + `t_rr;
 					end else if(substate == `MS_READ_DATA0) begin
 						$display("%0t NM: MS_READ_DATA0",$realtime);
 						byte_count		<= byte_count - 1;
