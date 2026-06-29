@@ -2695,10 +2695,8 @@ task getSegment (input integer paddress,
     end
 endtask
 
-task Read_Data (input Page,
-                inout Addr);
-    integer Page;
-    integer Addr;
+task Read_Data (input integer Page,
+                inout integer Addr);
     integer memory_read_data_internal;
     begin
         memory_features_i0.read_mem_w(
@@ -2714,10 +2712,8 @@ task Read_Data (input Page,
     end
 endtask
 
-task Read_OTP (input Page,
-                inout Addr);
-    integer Page;
-    integer Addr;
+task Read_OTP (input integer Page,
+                inout integer Addr);
     begin
         if (Page <= BlockSize)
             begin
