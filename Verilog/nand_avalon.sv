@@ -68,28 +68,28 @@ always @(posedge clk) begin
 	// 0x08:		Status output
 
 	if (address == 2'b00) begin
-		readdata[7:0] = n_data_out;
+		readdata[7:0] <= n_data_out;
 	end else if(address == 2'b10) begin
-		readdata[7:0] = {2'b0000000,n_busy};
+		readdata[7:0] <= {2'b0000000,n_busy};
 	end else begin
-		readdata[7:0] = 0;
+		readdata[7:0] <= 0;
 	end
 	
 	if (prev_address == 2'b01 & prev_pwrite == 1'b0 & pwrite ==1'b1 & n_busy ==1'b0) begin
-		n_activate = 1;
+		n_activate <= 1;
 	end else begin
-		n_activate = 0;
+		n_activate <= 0;
 	end
 
 						
 	if(pwrite == 1'b0 & address == 2'b00) begin
-		n_data_in = writedata[7:0];
+		n_data_in <= writedata[7:0];
 	end else if (pwrite == 1'b0 & address == 2'b01) begin
-		n_cmd_in = writedata[7:0];
+		n_cmd_in <= writedata[7:0];
 	end
 	
-	prev_address = address;
-	prev_pwrite = pwrite;
+	prev_address <= address;
+	prev_pwrite <= pwrite;
 end
 
 endmodule
