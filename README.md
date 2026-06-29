@@ -19,3 +19,6 @@ Tools used for Verification:
 
 Installation of required tools:
 ```sudo apt-get install iverilog sigrok gtkwave verilator yosys```
+
+To view the waveforms from the testbench simulations in the Surfer Project, just click this link:
+https://app.surfer-project.org/?load_url=https://raw.githubusercontent.com/thesourcerer8/nand_controller/refs/heads/main/Verilog/testbenchs34.vcd&startup_commands=module_add%20testbench%3BNM%20top%3B
