@@ -17,8 +17,7 @@
 
 //package global;
 	// Clock cycle length in ns
-	// IMPORTANT!!! The 'clock_cycle' is configured for 400MHz, change it appropriately!
-`define clock_cycle 2.5
+`define clock_cycle 10.0
 
 	// NAND interface delays.
 	// Delays of 7.5ns may need to be fixed to 7.0.
