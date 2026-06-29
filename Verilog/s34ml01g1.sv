@@ -857,12 +857,17 @@ specify
     //////////////////////////////////////////////////////////////////////////
     always @ (gWE_n, gCE_n, gRE_n)
     begin
-        if (~gWE_n && ~gCE_n && gRE_n)
+        if (~gWE_n && ~gCE_n && gRE_n) begin
+            $display("%0t FLASH-BUS: write=1 (WE#=%b CE#=%b RE#=%b)", $realtime, gWE_n, gCE_n, gRE_n);
             write  =  1'b1;
-        else if (gWE_n &&  ~gCE_n && gRE_n)
+        end else if (gWE_n &&  ~gCE_n && gRE_n) begin
+            $display("%0t FLASH-BUS: write->0 (WE#=%b CE#=%b RE#=%b)", $realtime, gWE_n, gCE_n, gRE_n);
             write  =  1'b0;
-        else
+        end else begin
+            if (gCE_n)
+                $display("%0t FLASH-BUS: CE# inactive (high)! gCE_n=%b", $realtime, gCE_n);
             write = 1'b0;
+        end
 
         if (gWE_n &&  ~gCE_n && ~gRE_n )
             read = 1'b1;
@@ -930,6 +935,7 @@ specify
               begin
                 if (falling_edge_write)
                   begin
+                    $display("%0t FLASH-IDLE: falling_edge_write! CLE=%b ALE=%b Data=%h reseted=%b current_state=%h", $realtime, CLE, ALE, Data, reseted, current_state);
                     if (CLE && !ALE && (Data==16'h00))
                         next_state <= PREL_RD;
                     else if (CLE && !ALE && (Data==16'h90))
@@ -1059,6 +1065,7 @@ specify
               begin
                 if (falling_edge_write)
                   begin
+                    $display("%0t FLASH-RD: falling_edge_write! CLE=%b ALE=%b Data=%h PGD_ACT=%b", $realtime, CLE, ALE, Data, PGD_ACT);
                     if (CLE && !ALE && (Data == 16'h00))
                       begin
                         if (STAT_ACT)
@@ -1204,6 +1211,7 @@ specify
               begin
                 if (falling_edge_write)
                   begin
+                    $display("%0t FLASH: ID_PREL state - falling_edge_write. ALE=%b AddrCom=%h -> next_state=%s", $realtime, ALE, AddrCom, (ALE && ((AddrCom == 16'h00) || (AddrCom == 16'h20))) ? "ID" : "IDLE");
                     if (ALE  && ((AddrCom == 16'h00) || (AddrCom == 16'h20)))
                         next_state <= ID;
                     else
@@ -1576,6 +1584,8 @@ specify
     begin: Functional
 
         Status[7] = WPNeg;
+        if (falling_edge_write)
+            $display("%0t FLASH-FUNC: falling_edge_write triggered! reseted=%b current_state=%h flagWRITE=%b CLE=%b ALE=%b Data=%h", $realtime, reseted, current_state, flagWRITE, CLE, ALE, Data);
         if (!reseted)
             RY_zd <= 1'b1;
         else
@@ -2066,6 +2076,7 @@ specify
                       end
                     if (oe)
                       begin
+                          $display("%0t FLASH: ID state oe pulse: IDAddr=%0d IDArray[0]=%h DOut_zd will be set to %h", $realtime, IDAddr, IDArray[0], IDArray[IDAddr]);
                           if (IDAddr < 4 && !Id_ONFI)
                             begin
                               DOut_zd <= IDArray[IDAddr];
